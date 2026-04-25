@@ -40,7 +40,7 @@ export const errorHandler = (
       message = 'Database error';
       isOperational = false;
     }
-  } else if (err instanceof SyntaxError && 'body' in (err as Record<string, unknown>)) {
+  } else if (err instanceof SyntaxError && 'body' in (err as unknown as Record<string, unknown>)) {
     statusCode = 400;
     message = 'Invalid JSON in request body';
     isOperational = true;

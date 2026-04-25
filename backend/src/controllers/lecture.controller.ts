@@ -341,12 +341,14 @@ export const getTranscript = catchAsync(async (req: Request, res: Response) => {
 
   // Already completed → return cached text
   if (lecture.transcriptStatus === 'COMPLETED' && lecture.transcript) {
-    return sendSuccess(res, { status: 'COMPLETED', transcript: lecture.transcript });
+    sendSuccess(res, { status: 'COMPLETED', transcript: lecture.transcript });
+    return;
   }
 
   // No video yet
   if (!lecture.videoKey) {
-    return sendSuccess(res, { status: 'NO_VIDEO' });
+    sendSuccess(res, { status: 'NO_VIDEO' });
+    return;
   }
 
   // Not started → kick off job now
@@ -356,7 +358,8 @@ export const getTranscript = catchAsync(async (req: Request, res: Response) => {
       where: { id: lectureId },
       data: { transcriptJobName: jobName, transcriptStatus: 'IN_PROGRESS' },
     });
-    return sendSuccess(res, { status: 'IN_PROGRESS' });
+    sendSuccess(res, { status: 'IN_PROGRESS' });
+    return;
   }
 
   // Already running → check AWS for latest status
@@ -367,7 +370,8 @@ export const getTranscript = catchAsync(async (req: Request, res: Response) => {
       where: { id: lectureId },
       data: { transcriptStatus: 'COMPLETED', transcript: transcriptText },
     });
-    return sendSuccess(res, { status: 'COMPLETED', transcript: transcriptText });
+    sendSuccess(res, { status: 'COMPLETED', transcript: transcriptText });
+    return;
   }
 
   if (status === 'FAILED') {
@@ -375,10 +379,11 @@ export const getTranscript = catchAsync(async (req: Request, res: Response) => {
       where: { id: lectureId },
       data: { transcriptStatus: 'FAILED' },
     });
-    return sendSuccess(res, { status: 'FAILED' });
+    sendSuccess(res, { status: 'FAILED' });
+    return;
   }
 
-  return sendSuccess(res, { status });
+  sendSuccess(res, { status });
 });
 
 // ─── Private helper ───────────────────────────────────────────────────────────

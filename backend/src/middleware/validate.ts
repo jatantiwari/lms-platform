@@ -24,6 +24,6 @@ export const validate =
     }
 
     // Replace with parsed value so downstream code gets coerced types
-    (req as Record<string, unknown>)[target] = result.data;
+    ((req as unknown) as Record<string, unknown>)[target] = result.data;
     next();
   };
