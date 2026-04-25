@@ -55,6 +55,8 @@ export interface Course {
   sections?: Section[];
   isEnrolled?: boolean;
   createdAt: string;
+  reviews?: Review[];
+  updatedAt: string;
 }
 
 export interface Section {
@@ -175,7 +177,7 @@ export interface InstructorStats {
     course: Pick<Course, 'id' | 'title' | 'slug'>;
     createdAt: string;
   }>;
-  monthlyEarnings: Record<string, number>;
+  monthlyEarnings: any[]; // Simplified for now, can be expanded to include month/year breakdown
 }
 
 export interface AdminStats {

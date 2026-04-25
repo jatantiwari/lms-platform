@@ -109,7 +109,10 @@ export default function InstructorDashboardPage() {
             </div>
             <div className="space-y-3">
               {stats.recentEnrollments.map((e) => (
-                <div key={e.id} className="flex items-center justify-between">
+                <div
+                  key={e.user.id + '-' + e.course.id + '-' + e.createdAt}
+                  className="flex items-center justify-between"
+                >
                   <div>
                     <p className="text-sm font-medium text-gray-900">{e.user?.name}</p>
                     <p className="text-xs text-gray-500">{e.course?.title}</p>

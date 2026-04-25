@@ -8,15 +8,7 @@ import { Enrollment } from '@/types';
 import { BookOpen, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { formatDuration, timeAgo } from '@/lib/utils';
 
-interface ProgressObject {
-  totalLectures: number;
-  completedCount: number;
-  percentage: number;
-}
-
-interface EnrollmentWithProgress extends Enrollment {
-  progress?: ProgressObject | number;
-}
+interface EnrollmentWithProgress extends Enrollment {}
 
 export default function StudentDashboardPage() {
   const [enrollments, setEnrollments] = useState<EnrollmentWithProgress[]>([]);

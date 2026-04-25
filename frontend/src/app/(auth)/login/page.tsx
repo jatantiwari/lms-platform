@@ -15,7 +15,9 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-export default function LoginPage() {
+import { Suspense } from 'react';
+
+function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') ?? '/dashboard/student';
@@ -111,5 +113,14 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageInner />
+    </Suspense>
   );
 }

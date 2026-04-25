@@ -1,1 +1,16 @@
-{}
+{
+  "components/course/CourseCurriculum.tsx -> @/components/video/VideoPlayer": {
+    "id": 9160,
+    "files": [
+      "static/chunks/a4634e51-0afb2f5a396831ea.js",
+      "static/chunks/160-76126a47bf929518.js"
+    ]
+  },
+  "components/course/CoursePreviewPlayer.tsx -> @/components/video/VideoPlayer": {
+    "id": 9160,
+    "files": [
+      "static/chunks/a4634e51-0afb2f5a396831ea.js",
+      "static/chunks/160-76126a47bf929518.js"
+    ]
+  }
+}

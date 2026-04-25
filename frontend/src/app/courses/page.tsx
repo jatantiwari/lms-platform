@@ -19,7 +19,9 @@ const SORT_OPTIONS = [
   { value: 'price_desc', label: 'Price: High to Low' },
 ];
 
-export default function CoursesPage() {
+import { Suspense } from 'react';
+
+function CoursesPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -216,5 +218,14 @@ export default function CoursesPage() {
       </main>
       <Footer />
     </>
+  );
+
+}
+
+export default function CoursesPage() {
+  return (
+    <Suspense>
+      <CoursesPageInner />
+    </Suspense>
   );
 }
