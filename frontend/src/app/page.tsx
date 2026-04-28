@@ -110,7 +110,7 @@ export default async function HomePage() {
           <div className="max-w-3xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Learning?</h2>
             <p className="text-primary-100 mb-8 text-lg">
-              Join over 500,000 students already learning on LMS Platform.
+              Join over 500,000 students already learning on ADI Boost.
             </p>
             <Link
               href="/register"

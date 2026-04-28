@@ -49,8 +49,8 @@ export default function RegisterPage() {
       const { data: res } = await authApi.register(data);
       setTokens(res.data.accessToken, res.data.refreshToken);
       await fetchMe();
-      if (data.role === 'INSTRUCTOR') router.push('/dashboard/instructor');
-      else router.push('/dashboard/student');
+      // Always go to email verification first
+      router.push('/verify-email');
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??

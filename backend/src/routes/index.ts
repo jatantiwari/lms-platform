@@ -8,6 +8,7 @@ import reviewRouter from './review.route';
 import paymentRouter from './payment.route';
 import dashboardRouter from './dashboard.route';
 import hlsRouter from './hls.route';
+import instructorRouter from './instructor.route';
 import { authenticate } from '../middleware/authenticate';
 import { getLecture } from '../controllers/lecture.controller';
 
@@ -22,6 +23,7 @@ router.use('/reviews', reviewRouter);
 router.use('/payments', paymentRouter);
 router.use('/dashboard', dashboardRouter);
 router.use('/hls', hlsRouter);
+router.use('/instructor', instructorRouter);
 
 // Top-level lecture fetch used by the learn page (GET /lectures/:lectureId)
 router.get('/lectures/:lectureId', authenticate, getLecture);

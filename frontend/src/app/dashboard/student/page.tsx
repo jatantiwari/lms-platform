@@ -3,14 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { enrollmentApi, progressApi } from '@/lib/api';
+import { enrollmentApi } from '@/lib/api';
 import { Enrollment } from '@/types';
-import { BookOpen, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { BookOpen, Clock, ChevronRight, Loader2, GraduationCap, Trophy, PlayCircle } from 'lucide-react';
 import { formatDuration, timeAgo } from '@/lib/utils';
+import { useUser } from '@/store/authStore';
 
 interface EnrollmentWithProgress extends Enrollment {}
 
 export default function StudentDashboardPage() {
+  const user = useUser();
   const [enrollments, setEnrollments] = useState<EnrollmentWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,93 +32,148 @@ export default function StudentDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
       </div>
     );
   }
 
+  const completed = enrollments.filter((e) => !!e.completedAt).length;
+  const inProgress = enrollments.filter((e) => !e.completedAt).length;
+
+  const getProgress = (enrollment: EnrollmentWithProgress) => {
+    const raw = enrollment.progress;
+    return typeof raw === 'object' && raw !== null ? raw.percentage ?? 0 : raw ?? 0;
+  };
+
+  // Show up to 3 in-progress courses on overview
+  const recentEnrollments = enrollments
+    .filter((e) => !e.completedAt)
+    .slice(0, 3);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">My Learning</h1>
-      <p className="text-gray-500 text-sm mb-8">{enrollments.length} course{enrollments.length !== 1 ? 's' : ''} enrolled</p>
+    <div className="space-y-8">
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-primary-600 to-indigo-600 rounded-2xl p-6 text-white">
+        <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
+        <p className="text-primary-100 mt-1 text-sm">
+          Keep up the great work — you&apos;re making progress!
+        </p>
+      </div>
 
-      {enrollments.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
-          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">No courses yet</h2>
-          <p className="text-gray-500 mb-6">Start learning by enrolling in a course</p>
-          <Link href="/courses" className="btn-primary">Browse Courses</Link>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-indigo-100 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-gray-500">Enrolled</p>
+            <div className="bg-indigo-50 p-2 rounded-lg">
+              <BookOpen className="w-5 h-5 text-indigo-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{enrollments.length}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Total courses</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {enrollments.map((enrollment) => {
-            const course = enrollment.course;
-            const rawProgress = enrollment.progress;
-            const progress = typeof rawProgress === 'object' && rawProgress !== null
-              ? rawProgress.percentage ?? 0
-              : rawProgress ?? 0;
-            return (
-              <Link
-                key={enrollment.id}
-                href={`/courses/${course.slug}/learn`}
-                className="card hover:shadow-md transition-shadow group"
-              >
-                <div className="relative aspect-video bg-gray-100 rounded-t-xl overflow-hidden">
-                  {course.thumbnail ? (
-                    <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-primary-100 flex items-center justify-center">
-                      <BookOpen className="w-10 h-10 text-primary-300" />
-                    </div>
-                  )}
-                  {enrollment.completedAt && (
-                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      Completed
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 group-hover:text-primary-600 transition-colors">
-                    {course.title}
-                  </h3>
-
-                  {/* Progress bar */}
-                  <div className="mb-2">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>{progress}% complete</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary-500 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {formatDuration(course.totalDuration)}
-                    </span>
-                    <span>{timeAgo(enrollment.createdAt)}</span>
-                  </div>
-                </div>
-
-                <div className="px-4 pb-4 border-t border-gray-50 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-primary-600 font-medium">
-                      {progress === 100 ? 'Review Course' : progress === 0 ? 'Start Learning' : 'Continue Learning'}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-primary-400" />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+        <div className="bg-white rounded-xl border border-amber-100 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-gray-500">In Progress</p>
+            <div className="bg-amber-50 p-2 rounded-lg">
+              <PlayCircle className="w-5 h-5 text-amber-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{inProgress}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Active courses</p>
         </div>
-      )}
+        <div className="bg-white rounded-xl border border-emerald-100 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-gray-500">Completed</p>
+            <div className="bg-emerald-50 p-2 rounded-lg">
+              <Trophy className="w-5 h-5 text-emerald-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{completed}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Finished courses</p>
+        </div>
+      </div>
+
+      {/* Continue Learning */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-semibold text-gray-900">Continue Learning</h2>
+          <Link href="/dashboard/student/courses" className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+            View all →
+          </Link>
+        </div>
+
+        {enrollments.length === 0 ? (
+          <div className="text-center py-12">
+            <GraduationCap className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+            <h3 className="text-sm font-semibold text-gray-700 mb-1">No courses yet</h3>
+            <p className="text-xs text-gray-400 mb-4">Start learning by browsing our catalogue</p>
+            <Link href="/courses" className="btn-primary text-sm">Browse Courses</Link>
+          </div>
+        ) : recentEnrollments.length === 0 ? (
+          <div className="text-center py-8">
+            <Trophy className="w-10 h-10 text-emerald-300 mx-auto mb-3" />
+            <p className="text-sm text-gray-600">You&apos;ve completed all your enrolled courses. Enroll in more!</p>
+            <Link href="/courses" className="btn-primary text-sm mt-4 inline-block">Browse Courses</Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentEnrollments.map((enrollment) => {
+              const course = enrollment.course;
+              const progress = getProgress(enrollment);
+              return (
+                <Link
+                  key={enrollment.id}
+                  href={`/courses/${course.slug}/learn`}
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors group border border-transparent hover:border-gray-100"
+                >
+                  <div className="relative w-16 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                    {course.thumbnail ? (
+                      <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-primary-100 flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-primary-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                      {course.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary-500 rounded-full"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">{progress}%</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatDuration(course.totalDuration)}
+                      </span>
+                      <span>{timeAgo(enrollment.createdAt)}</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary-500 shrink-0 transition-colors" />
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Browse more */}
+      <div className="bg-gradient-to-br from-indigo-50 to-primary-50 rounded-xl border border-indigo-100 p-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h3 className="font-semibold text-gray-900">Explore more courses</h3>
+          <p className="text-sm text-gray-500 mt-0.5">Discover new topics and expand your skills</p>
+        </div>
+        <Link href="/courses" className="btn-primary shrink-0 text-sm">Browse Courses</Link>
+      </div>
     </div>
   );
 }

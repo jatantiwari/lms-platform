@@ -41,7 +41,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <BookOpen className="w-7 h-7 text-primary-600" />
-            <span className="font-bold text-lg text-gray-900 hidden sm:block">LMS Platform</span>
+            <span className="font-bold text-lg text-gray-900 hidden sm:block">ADI Boost</span>
           </Link>
 
           {/* Search bar */}

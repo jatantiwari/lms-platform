@@ -15,9 +15,27 @@ export interface User {
   headline?: string;
   website?: string;
   emailVerified: boolean;
+  instructorApproved: boolean;
   isActive?: boolean;
   createdAt: string;
   _count?: { enrollments: number; courses: number };
+}
+
+export type InstructorStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface InstructorApplication {
+  id: string;
+  userId: string;
+  teachingExperience: string;
+  expertise: string[];
+  bio: string;
+  linkedIn?: string;
+  website?: string;
+  status: InstructorStatus;
+  rejectionReason?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  user?: Pick<User, 'id' | 'name' | 'email' | 'avatar' | 'createdAt'>;
 }
 
 export interface Category {

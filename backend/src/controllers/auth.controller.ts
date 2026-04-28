@@ -13,7 +13,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from '../utils/jwt';
-import { sendEmail, welcomeEmailTemplate, passwordResetTemplate } from '../utils/email';
+import { sendEmail, verificationEmailTemplate, passwordResetTemplate } from '../utils/email';
 import prisma from '../config/prisma';
 import crypto from 'crypto';
 
@@ -27,16 +27,20 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 
   const hashed = await hashPassword(password);
 
+  // Generate 6-digit verification code (expires 15 minutes)
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCodeExp = new Date(Date.now() + 15 * 60 * 1000);
+
   const user = await prisma.user.create({
-    data: { name, email, password: hashed, role },
-    select: { id: true, name: true, email: true, role: true, avatar: true, createdAt: true },
+    data: { name, email, password: hashed, role, verificationCode, verificationCodeExp },
+    select: { id: true, name: true, email: true, role: true, avatar: true, emailVerified: true, instructorApproved: true, createdAt: true },
   });
 
-  // Send welcome email (non-blocking)
+  // Send verification email (non-blocking)
   void sendEmail({
     to: email,
-    subject: 'Welcome to LMS Platform!',
-    html: welcomeEmailTemplate(name),
+    subject: 'Verify your ADI Boost account',
+    html: verificationEmailTemplate(name, verificationCode),
   });
 
   const accessToken = generateAccessToken({ userId: user.id, role: user.role, email: user.email });
@@ -200,6 +204,7 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
       headline: true,
       website: true,
       emailVerified: true,
+      instructorApproved: true,
       createdAt: true,
       _count: {
         select: { enrollments: true, courses: true },
@@ -209,4 +214,81 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
 
   if (!user) throw new NotFoundError('User');
   sendSuccess(res, user, 'User fetched');
+});
+
+// ─── Verify Email ─────────────────────────────────────────────────────────────
+
+export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const { code } = req.body;
+  const userId = req.user!.userId;
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new NotFoundError('User');
+
+  if (user.emailVerified) {
+    sendSuccess(res, { emailVerified: true }, 'Email already verified');
+    return;
+  }
+
+  if (!user.verificationCode || !user.verificationCodeExp) {
+    throw new AppError('No verification code found. Please request a new one.', 400);
+  }
+
+  if (new Date() > user.verificationCodeExp) {
+    throw new AppError('Verification code has expired. Please request a new one.', 400);
+  }
+
+  if (user.verificationCode !== code) {
+    throw new AppError('Invalid verification code.', 400);
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { emailVerified: true, verificationCode: null, verificationCodeExp: null },
+    select: {
+      id: true, name: true, email: true, role: true, avatar: true,
+      emailVerified: true, instructorApproved: true, createdAt: true,
+    },
+  });
+
+  sendSuccess(res, updated, 'Email verified successfully');
+});
+
+// ─── Resend Verification ──────────────────────────────────────────────────────
+
+export const resendVerification = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new NotFoundError('User');
+
+  if (user.emailVerified) {
+    sendSuccess(res, null, 'Email is already verified');
+    return;
+  }
+
+  // Rate-limit: don't resend if code was generated less than 2 minutes ago
+  if (user.verificationCodeExp) {
+    const msUntilExpiry = user.verificationCodeExp.getTime() - Date.now();
+    const msTotal = 15 * 60 * 1000;
+    if (msUntilExpiry > msTotal - 2 * 60 * 1000) {
+      throw new AppError('Please wait before requesting another code.', 429);
+    }
+  }
+
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCodeExp = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { verificationCode, verificationCodeExp },
+  });
+
+  void sendEmail({
+    to: user.email,
+    subject: 'Your ADI Boost verification code',
+    html: verificationEmailTemplate(user.name, verificationCode),
+  });
+
+  sendSuccess(res, null, 'Verification code sent');
 });

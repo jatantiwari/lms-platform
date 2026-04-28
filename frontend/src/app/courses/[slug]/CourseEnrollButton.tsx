@@ -80,7 +80,12 @@ export default function CourseEnrollButton({ course }: Props) {
 
   return (
     <>
-      {isEnrolled ? (
+      {/* Instructors cannot purchase courses */}
+      {user?.role === 'INSTRUCTOR' ? (
+        <div className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-xl bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed select-none">
+          Instructors cannot enroll in courses
+        </div>
+      ) : isEnrolled ? (
         <button
           onClick={() => router.push(`/courses/${course.slug}/learn`)}
           className="w-full flex items-center justify-center gap-2 py-3 text-base font-semibold rounded-xl bg-green-600 hover:bg-green-700 text-white transition-colors"

@@ -110,6 +110,8 @@ export const authApi = {
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, password: string) =>
     api.post('/auth/reset-password', { token, password }),
+  verifyEmail: (code: string) => api.post('/auth/verify-email', { code }),
+  resendVerification: () => api.post('/auth/resend-verification'),
 };
 
 export const courseApi = {
@@ -235,4 +237,20 @@ export const userApi = {
   // Admin
   list: (params?: Record<string, unknown>) => api.get('/users', { params }),
   toggleActive: (id: string) => api.patch(`/users/${id}/toggle-active`),
+};
+
+export const instructorApi = {
+  apply: (data: {
+    teachingExperience: string;
+    expertise: string[];
+    bio: string;
+    linkedIn?: string;
+    website?: string;
+  }) => api.post('/instructor/apply', data),
+  getMyApplication: () => api.get('/instructor/my-application'),
+  // Admin
+  listApplications: (status?: string) =>
+    api.get('/instructor/applications', { params: status ? { status } : undefined }),
+  reviewApplication: (id: string, data: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) =>
+    api.patch(`/instructor/applications/${id}`, data),
 };

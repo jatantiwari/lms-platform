@@ -32,11 +32,7 @@ const envSchema = z.object({
   RAZORPAY_KEY_ID: z.string().optional().default(''),
   RAZORPAY_KEY_SECRET: z.string().optional().default(''),
 
-  // Email (SMTP - supports Gmail, AWS SES, SendGrid, etc.)
-  SMTP_HOST: z.string().default('smtp.gmail.com'),
-  SMTP_PORT: z.string().default('587').transform(Number),
-  SMTP_USER: z.string().min(1), // SMTP username (email for Gmail, IAM username for AWS SES)
-  SMTP_PASS: z.string().min(1), // SMTP password or API key
+  // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
 });
 

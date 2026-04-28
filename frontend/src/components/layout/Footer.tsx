@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 text-white mb-4">
               <BookOpen className="w-6 h-6 text-primary-400" />
-              <span className="font-bold text-lg">LMS Platform</span>
+              <span className="font-bold text-lg">ADI Boost</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
               Empowering learners worldwide with quality online education.
@@ -63,8 +63,19 @@ export default function Footer() {
 
         <hr className="border-gray-800 my-8" />
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} LMS Platform. All rights reserved.</p>
-          <p>Built with Next.js, TypeScript & ❤️</p>
+          <p>
+            © {new Date().getFullYear()}{' '}
+            <a
+              href="https://alldigitalideas.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              All Digital Ideas
+            </a>
+            . All rights reserved.
+          </p>
+          <p>Powered by ADI Boost</p>
         </div>
       </div>
     </footer>

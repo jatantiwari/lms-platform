@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
+import NoRightClick from '@/components/ui/NoRightClick';
 
 export const metadata: Metadata = {
-  title: { default: 'LMS Platform', template: '%s | LMS Platform' },
+  title: { default: 'ADI Boost', template: '%s | ADI Boost' },
   description: 'Learn new skills from expert instructors. Build your future with quality online courses.',
   keywords: ['online learning', 'courses', 'tutorials', 'education'],
   openGraph: {
     type: 'website',
-    siteName: 'LMS Platform',
+    siteName: 'ADI Boost',
   },
 };
 
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <NoRightClick />
         {children}
         <Toaster
           position="top-right"

@@ -29,6 +29,15 @@ export const createCourse = catchAsync(async (req: Request, res: Response) => {
   const instructorId = req.user!.userId;
   const data = req.body;
 
+  // Only approved instructors can create courses
+  const instructor = await prisma.user.findUnique({
+    where: { id: instructorId },
+    select: { instructorApproved: true },
+  });
+  if (!instructor?.instructorApproved) {
+    throw new ForbiddenError('Your instructor account is not yet approved. Please complete the onboarding and wait for admin approval.');
+  }
+
   let slug = createSlug(data.title);
   const existing = await prisma.course.findUnique({ where: { slug } });
   if (existing) slug = createSlug(data.title, true);

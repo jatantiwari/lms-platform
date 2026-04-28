@@ -35,6 +35,10 @@ function LoginPageInner() {
     setServerError('');
     try {
       const user = await login(data.email, data.password);
+      if (!user.emailVerified) {
+        router.push('/verify-email');
+        return;
+      }
       if (user.role === 'ADMIN') router.push('/admin');
       else if (user.role === 'INSTRUCTOR') router.push('/dashboard/instructor');
       else router.push(redirect);
