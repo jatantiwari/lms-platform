@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
-import NoRightClick from '@/components/ui/NoRightClick';
 
 export const metadata: Metadata = {
   title: { default: 'ADI Boost', template: '%s | ADI Boost' },
@@ -17,7 +16,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <NoRightClick />
         {children}
         <Toaster
           position="top-right"

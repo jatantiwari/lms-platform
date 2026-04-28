@@ -1,8 +1,7 @@
 {
   "/page": "app/page.js",
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/(auth)/forgot-password/page": "app/(auth)/forgot-password/page.js",
-  "/admin/instructors/page": "app/admin/instructors/page.js",
   "/dashboard/instructor/page": "app/dashboard/instructor/page.js",
-  "/dashboard/instructor/courses/new/page": "app/dashboard/instructor/courses/new/page.js"
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/dashboard/instructor/courses/new/page": "app/dashboard/instructor/courses/new/page.js",
+  "/(auth)/forgot-password/page": "app/(auth)/forgot-password/page.js"
 }

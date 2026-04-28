@@ -180,6 +180,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!user.emailVerified) { router.replace('/verify-email'); return; }
   }, [user, router]);
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => e.preventDefault();
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
+  }, []);
+
   if (!user || !user.emailVerified) return null;
 
   const navItems = user.role === 'INSTRUCTOR' ? instructorNav : studentNav;
