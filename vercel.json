@@ -5,13 +5,9 @@
             "routePrefix": "/",
             "framework": "nextjs"
         },
-        "backend": {
-            "entrypoint": "backend",
-            "routePrefix": "/backend"
-        },
         "seo": {
             "entrypoint": "seo",
-            "routePrefix": "/lms-seo",
+            "routePrefix": "/",
             "framework": "nextjs"
         }
     }
