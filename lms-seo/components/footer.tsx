@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Linkedin, Twitter, Facebook } from 'lucide-react';
+import { Mail, Instagram, Facebook } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -19,8 +19,18 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Learn, Invest, Grow. Master stock market trading with expert mentorship and proven strategies for lasting financial freedom.
+              Learn, Invest, Grow. Master commodity trading with expert mentorship and proven strategies for lasting financial freedom.
             </p>
+            <div className="mt-4 space-y-1 text-sm">
+              <a href="mailto:ffmentor2024@gmail.com" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                <Mail className="w-4 h-4 text-primary" />
+                ffmentor2024@gmail.com
+              </a>
+              <a href="tel:+918000160017" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                <span className="w-4 h-4 text-primary text-xs font-bold">📞</span>
+                +91 80001 60017
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -93,13 +103,10 @@ export function Footer() {
               © 2026 Financial Freedom Mentor. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="w-5 h-5" />
+              <a href="https://www.instagram.com/yours_ffmentor/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://www.facebook.com/yoursffmentor" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Facebook className="w-5 h-5" />
               </a>
             </div>

@@ -65,8 +65,8 @@ export default function ContactPage() {
                     <Mail className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                      <a href="mailto:hello@stockmarketmentorship.com" className="text-muted-foreground hover:text-primary transition-colors">
-                        hello@stockmarketmentorship.com
+                      <a href="mailto:ffmentor2024@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
+                        ffmentor2024@gmail.com
                       </a>
                     </div>
                   </div>
@@ -74,9 +74,9 @@ export default function ContactPage() {
                   <div className="flex gap-4">
                     <Phone className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                      <a href="tel:+18005551234" className="text-muted-foreground hover:text-primary transition-colors">
-                        +1 (800) 555-1234
+                      <h3 className="font-semibold text-foreground mb-1">Phone / WhatsApp</h3>
+                      <a href="tel:+918000160017" className="text-muted-foreground hover:text-primary transition-colors">
+                        +91 80001 60017
                       </a>
                     </div>
                   </div>
@@ -84,12 +84,30 @@ export default function ContactPage() {
                   <div className="flex gap-4">
                     <MapPin className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Office</h3>
-                      <p className="text-muted-foreground">
-                        123 Trading Street<br />
-                        New York, NY 10001<br />
-                        United States
-                      </p>
+                      <h3 className="font-semibold text-foreground mb-1">Website</h3>
+                      <a href="https://www.ffmentor.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        www.ffmentor.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <span className="text-primary mt-1">📸</span>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Instagram</h3>
+                      <a href="https://www.instagram.com/yours_ffmentor/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        @yours_ffmentor
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <span className="text-primary mt-1">👤</span>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Facebook</h3>
+                      <a href="https://www.facebook.com/yoursffmentor" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        /yoursffmentor
+                      </a>
                     </div>
                   </div>
                 </div>
