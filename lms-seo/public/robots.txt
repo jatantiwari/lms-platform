@@ -1,0 +1,20 @@
+# Stock Market Mentorship Robots Configuration
+User-agent: *
+Allow: /
+
+# Crawl delay to reduce server load
+Crawl-delay: 1
+
+# Disallow private admin pages (if any)
+Disallow: /admin/
+Disallow: /private/
+
+# Allow search engines to crawl specific areas
+Allow: /courses
+Allow: /pricing
+Allow: /features
+Allow: /about
+Allow: /testimonials
+
+# Sitemap location
+Sitemap: https://stockmarketmentorship.com/sitemap.xml

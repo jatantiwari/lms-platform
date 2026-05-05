@@ -132,6 +132,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [user, router]);
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => e.preventDefault();
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
+  }, []);
+
   if (!user || user.role !== 'ADMIN') return null;
 
   const handleLogout = async () => {

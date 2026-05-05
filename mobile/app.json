@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "ADI Boost",
+    "slug": "adi-boost-student",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "adiboost",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6C3EF4"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.alldigitalideas.adiboost",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Used to upload your profile picture",
+        "NSPhotoLibraryUsageDescription": "Used to select your profile picture",
+        "NSMicrophoneUsageDescription": "Not required"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6C3EF4"
+      },
+      "package": "com.alldigitalideas.adiboost",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#6C3EF4",
+          "sounds": []
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -19,14 +19,17 @@ import logger from '../config/logger';
  * hlsKey format: "hls/{courseId}/{lectureId}"
  * The lectureId is extracted to build the proxy URL.
  */
-export async function getHLSStreamUrl(hlsKey: string): Promise<string> {
+export async function getHLSStreamUrl(hlsKey: string, token?: string): Promise<string> {
   if (process.env.CLOUDFRONT_URL) {
     return `${process.env.CLOUDFRONT_URL}/${hlsKey}/master.m3u8`;
   }
   // Extract lectureId — last segment of the hlsKey path
   const lectureId = hlsKey.split('/').pop()!;
   const apiBase = process.env.API_URL ?? 'http://localhost:5000/api/v1';
-  return `${apiBase}/hls/${lectureId}/master.m3u8`;
+  // Embed token as query param so native players (expo-av) that cannot set
+  // Authorization headers can still authenticate against the HLS proxy.
+  const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+  return `${apiBase}/hls/${lectureId}/master.m3u8${tokenParam}`;
 }
 
 // Prefer system-installed binaries (Homebrew on macOS) over static npm packages,

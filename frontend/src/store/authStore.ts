@@ -13,7 +13,7 @@ interface AuthState {
   setUser: (user: User) => void;
   login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
-  fetchMe: () => Promise<void>;
+  fetchMe: () => Promise<User | null>;
   clear: () => void;
 }
 
@@ -63,8 +63,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { data } = await authApi.getMe();
           set({ user: data.data });
+          return data.data as User;
         } catch {
           get().clear();
+          return null;
         }
       },
 

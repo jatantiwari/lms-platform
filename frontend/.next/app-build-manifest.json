@@ -21,50 +21,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/layout.js"
     ],
-    "/(auth)/forgot-password/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/forgot-password/page.js"
-    ],
-    "/(auth)/register/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/register/page.js"
-    ],
     "/dashboard/student/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/student/page.js"
-    ],
-    "/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/courses/page.js"
-    ],
-    "/admin/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/page.js"
-    ],
-    "/admin/users/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/users/page.js"
-    ],
-    "/(auth)/reset-password/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/reset-password/page.js"
-    ],
-    "/admin/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/courses/page.js"
-    ],
-    "/admin/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/layout.js"
     ],
     "/dashboard/layout": [
       "static/chunks/webpack.js",
@@ -76,20 +36,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/student/courses/page.js"
     ],
-    "/verify-email/page": [
+    "/courses/[slug]/learn/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/verify-email/page.js"
+      "static/chunks/app/courses/[slug]/learn/page.js"
+    ],
+    "/courses/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/courses/page.js"
+    ],
+    "/courses/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/courses/[slug]/page.js"
     ],
     "/dashboard/instructor/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/instructor/page.js"
-    ],
-    "/onboarding/instructor/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/onboarding/instructor/page.js"
     ],
     "/dashboard/instructor/courses/new/page": [
       "static/chunks/webpack.js",
@@ -101,10 +66,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/instructor/courses/page.js"
     ],
-    "/admin/instructors/page": [
+    "/dashboard/instructor/courses/[id]/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/instructors/page.js"
+      "static/chunks/app/dashboard/instructor/courses/[id]/settings/page.js"
+    ],
+    "/dashboard/instructor/analytics/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/instructor/analytics/page.js"
+    ],
+    "/dashboard/instructor/courses/[id]/curriculum/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/instructor/courses/[id]/curriculum/page.js"
     ]
   }
 }

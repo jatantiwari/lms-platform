@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { courseApi } from '@/lib/api';
 import { Category } from '@/types';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Smartphone } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 const schema = z.object({
@@ -18,6 +19,7 @@ const schema = z.object({
   language: z.string().min(1, 'Required'),
   categoryId: z.string().min(1, 'Select a category'),
   shortDesc: z.string().max(300).optional(),
+  mobileOnly: z.boolean().optional().default(false),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -34,11 +36,15 @@ export default function NewCoursePage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { level: 'BEGINNER', language: 'English', price: 0 },
+    defaultValues: { level: 'BEGINNER', language: 'English', price: 0, mobileOnly: false },
   });
+
+  const mobileOnly = watch('mobileOnly');
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -48,8 +54,8 @@ export default function NewCoursePage() {
         requirements: [],
         objectives: [],
       });
-      toast.success('Course created!');
-      router.push(`/dashboard/instructor/courses/${res.data.id}/curriculum`);
+      toast.success('Course created! Upload a thumbnail to finish setup.');
+      router.push(`/dashboard/instructor/courses/${res.data.id}/settings`);
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
@@ -125,6 +131,45 @@ export default function NewCoursePage() {
             {errors.categoryId && <p className="mt-1 text-xs text-red-600">{errors.categoryId.message}</p>}
           </div>
         </div>
+
+        {/* Mobile-only access toggle */}
+        <button
+          type="button"
+          onClick={() => setValue('mobileOnly', !mobileOnly)}
+          className={cn(
+            'w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-colors',
+            mobileOnly
+              ? 'border-primary-500 bg-primary-50'
+              : 'border-gray-200 bg-gray-50 hover:border-gray-300',
+          )}
+        >
+          <div className={cn(
+            'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
+            mobileOnly ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-500',
+          )}>
+            <Smartphone className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={cn('text-sm font-semibold', mobileOnly ? 'text-primary-700' : 'text-gray-700')}>
+              Mobile Device Only
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {mobileOnly
+                ? 'Only students on mobile devices can access this course'
+                : 'This course is accessible on all devices'}
+            </p>
+          </div>
+          <div className={cn(
+            'w-5 h-5 rounded-full border-2 shrink-0 transition-colors',
+            mobileOnly ? 'border-primary-500 bg-primary-500' : 'border-gray-300',
+          )}>
+            {mobileOnly && (
+              <svg className="w-full h-full text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clipRule="evenodd" />
+              </svg>
+            )}
+          </div>
+        </button>
 
         <button
           type="submit"

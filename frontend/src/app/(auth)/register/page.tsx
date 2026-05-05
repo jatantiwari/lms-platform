@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { Eye, EyeOff, Loader2, GraduationCap, BookOpen } from 'lucide-react';
+import { Eye, EyeOff, Loader2, GraduationCap, BookOpen, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const schema = z.object({
@@ -20,6 +20,23 @@ const schema = z.object({
     .regex(/[A-Z]/, 'Must contain uppercase')
     .regex(/[0-9]/, 'Must contain a number'),
   role: z.enum(['STUDENT', 'INSTRUCTOR']),
+  phone: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.role === 'STUDENT') {
+    if (!data.phone || data.phone.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Phone number is required for students',
+        path: ['phone'],
+      });
+    } else if (!/^[+]?[0-9]{7,15}$/.test(data.phone.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Invalid phone number',
+        path: ['phone'],
+      });
+    }
+  }
 });
 type FormData = z.infer<typeof schema>;
 
@@ -130,6 +147,21 @@ export default function RegisterPage() {
           {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
           <p className="mt-1 text-xs text-gray-400">Min 8 chars with uppercase and number</p>
         </div>
+
+        {role === 'STUDENT' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Phone Number *</span>
+            </label>
+            <input
+              {...register('phone')}
+              type="tel"
+              placeholder="+91 9876543210"
+              className="input-field"
+            />
+            {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
+          </div>
+        )}
 
         <button
           type="submit"

@@ -56,6 +56,7 @@ model User {
   bio            String?
   headline       String?
   website        String?
+  phone          String?
   refreshToken          String?
   emailVerified         Boolean   @default(false)
   verificationCode      String?
@@ -64,16 +65,21 @@ model User {
   resetTokenExp         DateTime?
   instructorApproved    Boolean   @default(false)
   isActive              Boolean   @default(true)
+  pushToken             String?
+  pushTokenPlatform     String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
   // Relations
-  courses            Course[]           @relation("InstructorCourses")
-  enrollments        Enrollment[]
-  progress           Progress[]
-  reviews            Review[]
-  payments           Payment[]
-  instructorProfile  InstructorProfile?
+  courses                 Course[]           @relation("InstructorCourses")
+  enrollments             Enrollment[]
+  progress                Progress[]
+  reviews                 Review[]
+  lectureRatings          LectureRating[]
+  payments                Payment[]
+  instructorProfile       InstructorProfile?
+  seoRegistrations        SeoRegistration[]  @relation("StudentSeoReg")
+  instructorSeoRegistrations SeoRegistration[] @relation("InstructorSeoReg")
 
   @@index([role])
   @@map("users")
@@ -115,6 +121,7 @@ model Course {
   avgRating     Float        @default(0)
   totalReviews  Int          @default(0)
   isFeatured    Boolean      @default(false)
+  mobileOnly    Boolean      @default(false)
 
   // Relations
   instructorId String
@@ -122,10 +129,11 @@ model Course {
   categoryId   String?
   category     Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  sections    Section[]
-  enrollments Enrollment[]
-  reviews     Review[]
-  payments    Payment[]
+  sections         Section[]
+  enrollments      Enrollment[]
+  reviews          Review[]
+  payments         Payment[]
+  seoRegistrations SeoRegistration[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -164,14 +172,17 @@ model Lecture {
   isPublished Boolean  @default(false)
   resources   Json?    // array of {type, title, url, key?}
   questions   Json?    // array of LectureQuestion {id, question, options[], correctIndex, showAtSecond, explanation?}
+  avgRating    Float   @default(0)
+  totalRatings Int     @default(0)
   // Transcript (AWS Transcribe)
   transcriptJobName String?
   transcriptStatus  String?  // IN_PROGRESS | COMPLETED | FAILED
   transcript        String?
 
   sectionId String
-  section   Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  section   Section       @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   progress  Progress[]
+  lectureRatings LectureRating[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -261,6 +272,25 @@ model Payment {
   @@map("payments")
 }
 
+model LectureRating {
+  id        String  @id @default(cuid()) @map("_id")
+  rating    Int     // 1-5
+  userId    String
+  lectureId String
+  courseId  String  // denormalized for efficient course-level queries
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lectureId])
+  @@index([lectureId])
+  @@index([courseId])
+  @@map("lecture_ratings")
+}
+
 model InstructorProfile {
   id                  String           @id @default(cuid()) @map("_id")
   userId              String           @unique
@@ -278,4 +308,40 @@ model InstructorProfile {
 
   @@index([status])
   @@map("instructor_profiles")
+}
+
+// ─── SEO Registration (from marketing site) ───────────────────────────────────
+
+model SeoRegistration {
+  id                          String        @id @default(cuid()) @map("_id")
+  studentName                 String
+  fatherGuardianName          String
+  mobileNumber                String
+  emailId                     String
+  address                     String
+  educationalQualification    String
+  occupation                  String
+  preferredCoursePlan         String        // "Basic" | "Pro" | "Elite"
+  previousTradingExperience   String        // "Yes" | "No"
+  whyJoin                     String
+  amount                      Float
+  paymentStatus               PaymentStatus @default(PENDING)
+  razorpayOrderId             String?       @unique
+  razorpayPaymentId           String?       @unique
+  razorpaySignature           String?
+
+  userId       String
+  user         User    @relation("StudentSeoReg", fields: [userId], references: [id], onDelete: Cascade)
+  instructorId String
+  instructor   User    @relation("InstructorSeoReg", fields: [instructorId], references: [id], onDelete: Restrict)
+  enrolledCourseId String?
+  enrolledCourse   Course? @relation(fields: [enrolledCourseId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([instructorId])
+  @@index([userId])
+  @@index([paymentStatus])
+  @@map("seo_registrations")
 }

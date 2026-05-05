@@ -28,9 +28,15 @@ const envSchema = z.object({
   AWS_S3_BUCKET_NAME: z.string().min(1),
   AWS_S3_ENDPOINT: z.string().optional(), // for Cloudflare R2
 
-  // Razorpay (optional — not used when dummy payment mode is active)
+  // Razorpay (required for SEO registration payment flow)
   RAZORPAY_KEY_ID: z.string().optional().default(''),
   RAZORPAY_KEY_SECRET: z.string().optional().default(''),
+
+  // SEO marketing site
+  SEO_SITE_URL: z.string().url().optional().default('http://localhost:3001'),
+
+  // The instructor user ID that all SEO registrations are assigned to
+  DEFAULT_INSTRUCTOR_ID: z.string().min(1).optional().default(''),
 
   // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),

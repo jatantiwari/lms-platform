@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"components/course/CourseCurriculum.tsx -> @/components/video/VideoPlayer\":{\"id\":\"components/course/CourseCurriculum.tsx -> @/components/video/VideoPlayer\",\"files\":[\"static/chunks/_app-pages-browser_src_components_video_VideoPlayer_tsx.js\"]},\"components/course/CoursePreviewPlayer.tsx -> @/components/video/VideoPlayer\":{\"id\":\"components/course/CoursePreviewPlayer.tsx -> @/components/video/VideoPlayer\",\"files\":[\"static/chunks/_app-pages-browser_src_components_video_VideoPlayer_tsx.js\"]}}"

@@ -14,13 +14,14 @@ import {
   verifyRefreshToken,
 } from '../utils/jwt';
 import { sendEmail, verificationEmailTemplate, passwordResetTemplate } from '../utils/email';
+import { s3ImageUrl } from '../services/s3.service';
 import prisma from '../config/prisma';
 import crypto from 'crypto';
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 
 export const register = catchAsync(async (req: Request, res: Response) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, phone } = req.body;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new ConflictError('An account with this email already exists');
@@ -32,8 +33,8 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   const verificationCodeExp = new Date(Date.now() + 15 * 60 * 1000);
 
   const user = await prisma.user.create({
-    data: { name, email, password: hashed, role, verificationCode, verificationCodeExp },
-    select: { id: true, name: true, email: true, role: true, avatar: true, emailVerified: true, instructorApproved: true, createdAt: true },
+    data: { name, email, password: hashed, role, phone: phone ?? null, verificationCode, verificationCodeExp },
+    select: { id: true, name: true, email: true, role: true, avatar: true, phone: true, emailVerified: true, instructorApproved: true, createdAt: true },
   });
 
   // Send verification email (non-blocking)
@@ -203,6 +204,7 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
       bio: true,
       headline: true,
       website: true,
+      phone: true,
       emailVerified: true,
       instructorApproved: true,
       createdAt: true,
@@ -213,7 +215,7 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
   });
 
   if (!user) throw new NotFoundError('User');
-  sendSuccess(res, user, 'User fetched');
+  sendSuccess(res, { ...user, avatar: await s3ImageUrl(user.avatar) }, 'User fetched');
 });
 
 // ─── Verify Email ─────────────────────────────────────────────────────────────
@@ -226,7 +228,15 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   if (!user) throw new NotFoundError('User');
 
   if (user.emailVerified) {
-    sendSuccess(res, { emailVerified: true }, 'Email already verified');
+    // Return the full user object so the frontend can safely call setUser
+    const fullUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true, name: true, email: true, role: true, avatar: true,
+        emailVerified: true, instructorApproved: true, createdAt: true,
+      },
+    });
+    sendSuccess(res, fullUser, 'Email already verified');
     return;
   }
 

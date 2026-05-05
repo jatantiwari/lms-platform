@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 export default function VerifyEmailPage() {
   const router = useRouter();
   const user = useUser();
-  const { setUser } = useAuthStore();
+  const { fetchMe } = useAuthStore();
 
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -82,10 +82,14 @@ export default function VerifyEmailPage() {
     }
     setIsVerifying(true);
     try {
-      const { data } = await authApi.verifyEmail(code);
-      setUser(data.data);
+      await authApi.verifyEmail(code);
+      // Use fetchMe to get a complete, fresh user object — avoids partial state corruption
+      const updated = await fetchMe();
       toast.success('Email verified!');
-      const updated = data.data;
+      if (!updated) {
+        router.replace('/login');
+        return;
+      }
       if (updated.role === 'INSTRUCTOR' && !updated.instructorApproved) {
         router.replace('/onboarding/instructor');
       } else if (updated.role === 'ADMIN') {

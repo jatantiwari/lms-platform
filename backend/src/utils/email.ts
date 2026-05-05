@@ -140,3 +140,191 @@ export function instructorRejectedEmailTemplate(name: string, reason: string): s
     </div>
   `;
 }
+
+// ─── SEO Registration Emails ───────────────────────────────────────────────────
+
+const BRAND_GOLD = '#D4A017';
+const BRAND_BG = '#0E0D0B';
+const BRAND_CARD = '#1A1914';
+
+/**
+ * Sent to the student immediately after registration — contains login credentials.
+ */
+export function seoStudentCredentialsTemplate(
+  name: string,
+  email: string,
+  password: string,
+  plan: string,
+  loginUrl: string,
+): string {
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;background:${BRAND_BG};border:1px solid #2a2a20;border-radius:12px;overflow:hidden">
+      <div style="background:${BRAND_CARD};padding:28px 32px;border-bottom:2px solid ${BRAND_GOLD}">
+        <h1 style="color:${BRAND_GOLD};margin:0;font-size:22px;letter-spacing:0.05em">Financial Freedom Mentor</h1>
+        <p style="color:#888;margin:4px 0 0;font-size:13px">Commodity Trading Mentorship</p>
+      </div>
+      <div style="padding:32px">
+        <h2 style="color:#f0ebe0;margin-bottom:8px">Welcome, ${name}! 🎉</h2>
+        <p style="color:#a0998a;margin-bottom:24px">
+          Your registration for the <strong style="color:${BRAND_GOLD}">${plan}</strong> plan was successful.
+          Below are your login credentials for the learning platform.
+        </p>
+        <div style="background:${BRAND_CARD};border:1px solid #2a2a20;border-radius:8px;padding:24px;margin-bottom:24px">
+          <p style="margin:0 0 8px;color:#a0998a;font-size:13px">YOUR LOGIN CREDENTIALS</p>
+          <table style="width:100%;border-collapse:collapse">
+            <tr>
+              <td style="color:#a0998a;font-size:14px;padding:6px 0;width:90px">Email</td>
+              <td style="color:#f0ebe0;font-size:14px;font-weight:600;padding:6px 0">${email}</td>
+            </tr>
+            <tr>
+              <td style="color:#a0998a;font-size:14px;padding:6px 0">Password</td>
+              <td style="color:${BRAND_GOLD};font-size:16px;font-weight:700;padding:6px 0;letter-spacing:0.1em">${password}</td>
+            </tr>
+          </table>
+        </div>
+        <p style="color:#a0998a;font-size:13px;margin-bottom:24px">
+          Please change your password after your first login for security.
+        </p>
+        <a href="${loginUrl}"
+           style="background:${BRAND_GOLD};color:#0E0D0B;padding:13px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:700;font-size:15px">
+          Login to Your Account &#8594;
+        </a>
+        <p style="margin-top:28px;color:#666;font-size:12px">
+          Your mentor will contact you shortly to guide your next steps. For support, reply to this email.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Sent to the instructor when a new student registers.
+ */
+export function seoInstructorNotificationTemplate(
+  instructorName: string,
+  student: {
+    name: string;
+    email: string;
+    mobile: string;
+    plan: string;
+    occupation: string;
+    experience: string;
+    whyJoin: string;
+  },
+  dashboardUrl: string,
+): string {
+  const rows = [
+    ['Name', student.name],
+    ['Email', student.email],
+    ['Mobile', student.mobile],
+    ['Plan', student.plan],
+    ['Occupation', student.occupation],
+    ['Prior Experience', student.experience],
+  ]
+    .map(
+      ([label, value]) =>
+        `<tr>
+          <td style="color:#a0998a;font-size:13px;padding:7px 0;width:130px;vertical-align:top">${label}</td>
+          <td style="color:#f0ebe0;font-size:14px;font-weight:600;padding:7px 0">${value}</td>
+        </tr>`,
+    )
+    .join('');
+
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;background:${BRAND_BG};border:1px solid #2a2a20;border-radius:12px;overflow:hidden">
+      <div style="background:${BRAND_CARD};padding:28px 32px;border-bottom:2px solid ${BRAND_GOLD}">
+        <h1 style="color:${BRAND_GOLD};margin:0;font-size:22px">Financial Freedom Mentor</h1>
+        <p style="color:#888;margin:4px 0 0;font-size:13px">New Student Registration</p>
+      </div>
+      <div style="padding:32px">
+        <h2 style="color:#f0ebe0;margin-bottom:8px">Hi ${instructorName}, a new student has registered!</h2>
+        <p style="color:#a0998a;margin-bottom:24px">Here are the registration details:</p>
+        <div style="background:${BRAND_CARD};border:1px solid #2a2a20;border-radius:8px;padding:24px;margin-bottom:24px">
+          <table style="width:100%;border-collapse:collapse">
+            ${rows}
+            <tr>
+              <td style="color:#a0998a;font-size:13px;padding:7px 0;vertical-align:top">Why They Joined</td>
+              <td style="color:#f0ebe0;font-size:13px;padding:7px 0">${student.whyJoin}</td>
+            </tr>
+          </table>
+        </div>
+        <a href="${dashboardUrl}"
+           style="background:${BRAND_GOLD};color:#0E0D0B;padding:13px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:700;font-size:15px">
+          View in Dashboard &#8594;
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Sent to the student after successful payment confirmation.
+ */
+export function seoPaymentConfirmedTemplate(
+  name: string,
+  plan: string,
+  amount: number,
+  paymentId: string,
+): string {
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;background:${BRAND_BG};border:1px solid #2a2a20;border-radius:12px;overflow:hidden">
+      <div style="background:${BRAND_CARD};padding:28px 32px;border-bottom:2px solid ${BRAND_GOLD}">
+        <h1 style="color:${BRAND_GOLD};margin:0;font-size:22px">Financial Freedom Mentor</h1>
+        <p style="color:#888;margin:4px 0 0;font-size:13px">Payment Confirmation</p>
+      </div>
+      <div style="padding:32px">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="font-size:48px;margin-bottom:8px">&#9989;</div>
+          <h2 style="color:#f0ebe0;margin:0">Payment Successful!</h2>
+        </div>
+        <div style="background:${BRAND_CARD};border:1px solid #2a2a20;border-radius:8px;padding:24px;margin-bottom:24px">
+          <table style="width:100%;border-collapse:collapse">
+            <tr>
+              <td style="color:#a0998a;font-size:13px;padding:6px 0">Plan</td>
+              <td style="color:${BRAND_GOLD};font-size:14px;font-weight:700;padding:6px 0;text-align:right">${plan}</td>
+            </tr>
+            <tr>
+              <td style="color:#a0998a;font-size:13px;padding:6px 0">Amount Paid</td>
+              <td style="color:#f0ebe0;font-size:14px;font-weight:700;padding:6px 0;text-align:right">&#8377;${amount.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr>
+              <td style="color:#a0998a;font-size:13px;padding:6px 0">Payment ID</td>
+              <td style="color:#a0998a;font-size:12px;padding:6px 0;text-align:right">${paymentId}</td>
+            </tr>
+          </table>
+        </div>
+        <p style="color:#a0998a;font-size:14px;margin-bottom:4px">
+          Hi ${name}, your payment has been confirmed and your mentor will reach out within 24 hours to schedule your first session.
+        </p>
+        <p style="margin-top:28px;color:#666;font-size:12px">Please save this email as your payment receipt.</p>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Sent to the student when the instructor manually enrolls them into a course.
+ */
+export function seoEnrollmentConfirmTemplate(
+  name: string,
+  courseTitle: string,
+  loginUrl: string,
+): string {
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;background:${BRAND_BG};border:1px solid #2a2a20;border-radius:12px;overflow:hidden">
+      <div style="background:${BRAND_CARD};padding:28px 32px;border-bottom:2px solid ${BRAND_GOLD}">
+        <h1 style="color:${BRAND_GOLD};margin:0;font-size:22px">Financial Freedom Mentor</h1>
+        <p style="color:#888;margin:4px 0 0;font-size:13px">Enrollment Confirmation</p>
+      </div>
+      <div style="padding:32px">
+        <h2 style="color:#f0ebe0;margin-bottom:8px">You're enrolled, ${name}! &#127891;</h2>
+        <p style="color:#a0998a;margin-bottom:8px">Your instructor has enrolled you in:</p>
+        <p style="color:${BRAND_GOLD};font-size:18px;font-weight:700;margin-bottom:24px">${courseTitle}</p>
+        <a href="${loginUrl}"
+           style="background:${BRAND_GOLD};color:#0E0D0B;padding:13px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:700;font-size:15px">
+          Start Learning Now &#8594;
+        </a>
+      </div>
+    </div>
+  `;
+}

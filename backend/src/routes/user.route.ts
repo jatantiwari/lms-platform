@@ -6,6 +6,7 @@ import {
   changePassword,
   listUsers,
   toggleUserActive,
+  updatePushToken,
 } from '../controllers/user.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -23,6 +24,7 @@ router.use(authenticate);
 router.put('/profile', validate(updateProfileSchema), updateProfile);
 router.put('/avatar', uploadImage.single('avatar'), uploadAvatar);
 router.put('/change-password', changePassword);
+router.put('/push-token', updatePushToken);
 
 // Admin only
 router.get('/', authorize('ADMIN'), listUsers);

@@ -3,7 +3,7 @@ import { catchAsync } from '../utils/catchAsync';
 import { sendSuccess, paginationMeta } from '../utils/response';
 import { NotFoundError, ForbiddenError } from '../utils/AppError';
 import { hashPassword } from '../utils/password';
-import { uploadToS3, removeFromS3 } from '../services/s3.service';
+import { uploadToS3, removeFromS3, s3ImageUrl, extractS3Key } from '../services/s3.service';
 import prisma from '../config/prisma';
 
 // ─── Get Profile ──────────────────────────────────────────────────────────────
@@ -36,21 +36,30 @@ export const getUserProfile = catchAsync(async (req: Request, res: Response) => 
   });
 
   if (!user) throw new NotFoundError('User');
-  sendSuccess(res, user, 'Profile fetched');
+
+  // Refresh presigned URLs for avatar and course thumbnails
+  const freshUser = {
+    ...user,
+    avatar: await s3ImageUrl(user.avatar),
+    courses: await Promise.all(
+      user.courses.map(async (c) => ({ ...c, thumbnail: await s3ImageUrl(c.thumbnail) })),
+    ),
+  };
+  sendSuccess(res, freshUser, 'Profile fetched');
 });
 
 // ─── Update Profile ───────────────────────────────────────────────────────────
 
 export const updateProfile = catchAsync(async (req: Request, res: Response) => {
-  const { name, bio, headline, website } = req.body;
+  const { name, bio, headline, website, phone } = req.body;
   const userId = req.user!.userId;
 
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { name, bio, headline, website },
+    data: { name, bio, headline, website, phone: phone || null },
     select: {
       id: true, name: true, email: true, role: true,
-      avatar: true, bio: true, headline: true, website: true,
+      avatar: true, bio: true, headline: true, website: true, phone: true,
     },
   });
 
@@ -68,26 +77,28 @@ export const uploadAvatar = catchAsync(async (req: Request, res: Response) => {
     select: { avatar: true },
   });
 
-  // Delete old avatar from S3
+  // Delete old avatar from S3 — handle both public URLs and presigned URLs
   if (existingUser?.avatar) {
-    const oldKey = new URL(existingUser.avatar).pathname.slice(1);
+    const oldKey = extractS3Key(existingUser.avatar);
     await removeFromS3(oldKey).catch(() => {/* ignore if delete fails */});
   }
 
-  const { url } = await uploadToS3(
+  const { key, url } = await uploadToS3(
     req.file.buffer,
     `avatars`,
     req.file.originalname,
     req.file.mimetype,
   );
 
+  // Store the S3 key (not the presigned URL) so we can always re-sign it later
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { avatar: url },
+    data: { avatar: key },
     select: { id: true, name: true, avatar: true },
   });
 
-  sendSuccess(res, user, 'Avatar updated');
+  // Return the fresh presigned URL to the client
+  sendSuccess(res, { ...user, avatar: url }, 'Avatar updated');
 });
 
 // ─── Change Password ──────────────────────────────────────────────────────────
@@ -110,6 +121,18 @@ export const changePassword = catchAsync(async (req: Request, res: Response) => 
   });
 
   sendSuccess(res, null, 'Password changed. Please log in again.');
+});
+
+// ─── Push Token ───────────────────────────────────────────────────────────────
+
+export const updatePushToken = catchAsync(async (req: Request, res: Response) => {
+  const { pushToken, platform } = req.body as { pushToken: string; platform?: string };
+  const userId = req.user!.userId;
+  await prisma.user.update({
+    where: { id: userId },
+    data: { pushToken, pushTokenPlatform: platform ?? null },
+  });
+  sendSuccess(res, null, 'Push token updated');
 });
 
 // ─── Admin: List Users ────────────────────────────────────────────────────────

@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/video/VideoPlayer';
-import { courseApi, lectureApi, progressApi } from '@/lib/api';
+import { courseApi, lectureApi, progressApi, lectureRatingApi } from '@/lib/api';
 import { Course, Lecture, LectureResource } from '@/types';
-import { CheckCircle2, ChevronDown, PlayCircle, Menu, X, Paperclip, Link2, ChevronLeft, ChevronRight, FileText, Loader2 } from 'lucide-react';
+import { CheckCircle2, ChevronDown, PlayCircle, Menu, X, Paperclip, Link2, ChevronLeft, ChevronRight, FileText, Loader2, Star, Smartphone } from 'lucide-react';
 import { cn, formatDuration } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
@@ -27,6 +27,24 @@ export default function LearnPage() {
   const [transcriptText, setTranscriptText] = useState<string | null>(null);
   const transcriptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Lecture rating state
+  const [myRating, setMyRating] = useState<number>(0);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [ratingLoading, setRatingLoading] = useState(false);
+
+  // Mobile detection (UA + screen width)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  useEffect(() => {
+    const check = () => {
+      const ua = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const narrow = window.innerWidth < 768;
+      setIsMobile(ua || narrow);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   // Flat list of all lectures for prev/next navigation
   const allLectures = course?.sections?.flatMap((s) => s.lectures) ?? [];
   const activeIndex = allLectures.findIndex((l) => l.id === activeLecture?.id);
@@ -45,7 +63,7 @@ export default function LearnPage() {
 
       // Load progress
       const { data: progressData } = await progressApi.getCourse(courseData.id);
-      const { completedLectureIds, percentage } = progressData.data;
+      const { completedLectures: completedLectureIds, percentage } = progressData.data;
       setCompletedIds(new Set(completedLectureIds));
       setCourseProgress(percentage);
 
@@ -74,10 +92,16 @@ export default function LearnPage() {
     setTranscriptStatus(null);
     setTranscriptText(null);
     setActiveTab('description');
+    setMyRating(0);
+    setHoverRating(0);
     if (transcriptPollRef.current) clearInterval(transcriptPollRef.current);
     try {
-      const { data } = await lectureApi.get(lectureId);
-      setActiveLecture(data.data);
+      const [lectureRes, ratingRes] = await Promise.allSettled([
+        lectureApi.get(lectureId),
+        lectureRatingApi.getMyRating(lectureId),
+      ]);
+      if (lectureRes.status === 'fulfilled') setActiveLecture(lectureRes.value.data.data);
+      if (ratingRes.status === 'fulfilled') setMyRating(ratingRes.value.data.data?.rating ?? 0);
     } catch {
       toast.error('Could not load lecture');
     } finally {
@@ -114,6 +138,20 @@ export default function LearnPage() {
     }
   };
 
+  const handleRateLecture = async (rating: number) => {
+    if (!activeLecture || ratingLoading) return;
+    setRatingLoading(true);
+    try {
+      await lectureRatingApi.rate(activeLecture.id, rating);
+      setMyRating(rating);
+      toast.success('Rating saved!');
+    } catch {
+      toast.error('Failed to save rating');
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
   const handleProgress = async (watchedSeconds: number) => {
     if (!activeLecture) return;
     await progressApi.update(activeLecture.id, { watchedSeconds }).catch(() => {});
@@ -140,6 +178,30 @@ export default function LearnPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Mobile-only gate: block desktop access if course requires mobile
+  if (course.mobileOnly && isMobile === false) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
+        <div className="max-w-md text-center">
+          <div className="w-20 h-20 mx-auto bg-primary-900/50 rounded-full flex items-center justify-center mb-6">
+            <Smartphone className="w-10 h-10 text-primary-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-3">Mobile Access Only</h1>
+          <p className="text-gray-400 text-sm leading-relaxed mb-6">
+            This course is configured for <span className="text-white font-medium">mobile devices only</span>.
+            Please open it on your smartphone or tablet to continue learning.
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
+          >
+            ← Go Back
+          </button>
+        </div>
       </div>
     );
   }
@@ -270,6 +332,39 @@ export default function LearnPage() {
                     Completed
                   </div>
                 )}
+
+                {/* Star Rating Widget */}
+                <div className="mt-5 pt-5 border-t border-gray-700">
+                  <p className="text-sm text-gray-300 font-medium mb-2">Rate this lecture</p>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        disabled={ratingLoading}
+                        onClick={() => handleRateLecture(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="transition-transform hover:scale-110 disabled:cursor-not-allowed"
+                        aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                      >
+                        <Star
+                          className={cn(
+                            'w-6 h-6 transition-colors',
+                            (hoverRating || myRating) >= star
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-600',
+                          )}
+                        />
+                      </button>
+                    ))}
+                    {myRating > 0 && (
+                      <span className="ml-2 text-xs text-gray-400">
+                        You rated this {myRating}/5
+                      </span>
+                    )}
+                    {ratingLoading && <Loader2 className="w-4 h-4 ml-2 text-gray-400 animate-spin" />}
+                  </div>
+                </div>
 
                 {/* Prev / Next navigation */}
                 <div className="mt-6 flex items-center justify-between gap-4">

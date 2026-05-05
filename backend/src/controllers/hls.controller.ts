@@ -70,7 +70,11 @@ export const streamMasterPlaylist = catchAsync(async (req: Request, res: Respons
 
   const content = await fetchS3Text(`${hlsKey}/master.m3u8`);
 
-  const apiBase = process.env.API_URL ?? 'http://localhost:5000/api/v1';
+  const apiBase = process.env.API_URL ?? 'http://:5000/api/v1';
+
+  // Propagate the ?token= query param (used by native players that can't set headers)
+  // so variant playlist requests are also authenticated through the proxy.
+  const tokenParam = req.query.token ? `?token=${encodeURIComponent(req.query.token as string)}` : '';
 
   const rewritten = content
     .split('\n')
@@ -78,7 +82,7 @@ export const streamMasterPlaylist = catchAsync(async (req: Request, res: Respons
       const trimmed = line.trim();
       // Rewrite variant playlist references (e.g. "720p.m3u8") to proxy URLs
       if (trimmed.endsWith('.m3u8') && !trimmed.startsWith('#') && !trimmed.startsWith('http')) {
-        return `${apiBase}/hls/${lectureId}/${trimmed}`;
+        return `${apiBase}/hls/${lectureId}/${trimmed}${tokenParam}`;
       }
       return line;
     })

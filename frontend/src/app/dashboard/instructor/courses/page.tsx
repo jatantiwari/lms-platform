@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { courseApi } from '@/lib/api';
 import { Course } from '@/types';
-import { Plus, BookOpen, Users, Edit, Loader2 } from 'lucide-react';
+import { Plus, BookOpen, Users, Edit, Settings, Loader2 } from 'lucide-react';
 import { formatPrice, timeAgo } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -86,6 +86,13 @@ export default function InstructorCoursesPage() {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
+                <Link
+                  href={`/dashboard/instructor/courses/${course.id}/settings`}
+                  className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Edit
+                </Link>
                 <Link
                   href={`/dashboard/instructor/courses/${course.id}/curriculum`}
                   className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"

@@ -9,6 +9,15 @@ export const registerSchema = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
   role: z.enum(['STUDENT', 'INSTRUCTOR']).optional().default('STUDENT'),
+  phone: z.string().regex(/^[+]?[0-9]{7,15}$/, 'Invalid phone number').optional(),
+}).superRefine((data, ctx) => {
+  if (data.role === 'STUDENT' && !data.phone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Phone number is required for students',
+      path: ['phone'],
+    });
+  }
 });
 
 export const loginSchema = z.object({
@@ -42,6 +51,7 @@ export const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   headline: z.string().max(150).optional(),
   website: z.string().url().optional().or(z.literal('')),
+  phone: z.string().regex(/^[+]?[0-9]{7,15}$/, 'Invalid phone number').optional().or(z.literal('')),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

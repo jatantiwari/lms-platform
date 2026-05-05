@@ -14,6 +14,7 @@ export interface User {
   bio?: string;
   headline?: string;
   website?: string;
+  phone?: string;
   emailVerified: boolean;
   instructorApproved: boolean;
   isActive?: boolean;
@@ -67,6 +68,7 @@ export interface Course {
   avgRating: number;
   totalReviews: number;
   isFeatured: boolean;
+  mobileOnly: boolean;
   instructorId: string;
   instructor: Pick<User, 'id' | 'name' | 'avatar' | 'headline'>;
   category?: Category;
@@ -111,6 +113,8 @@ export interface Lecture {
   isFree: boolean;
   isPublished: boolean;
   videoProcessing?: boolean; // true while ffmpeg is converting in background
+  avgRating?: number;
+  totalRatings?: number;
   sectionId: string;
   resources?: LectureResource[];
   questions?: LectureQuestion[];

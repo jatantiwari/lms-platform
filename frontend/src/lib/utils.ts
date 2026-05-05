@@ -37,13 +37,15 @@ export function formatDate(date: string | Date): string {
 }
 
 /** Get initials from a name (for fallback avatars) */
-export function getInitials(name: string): string {
+export function getInitials(name?: string | null): string {
+  if (!name) return '?';
   return name
     .split(' ')
     .map((n) => n[0])
+    .filter(Boolean)
     .slice(0, 2)
     .join('')
-    .toUpperCase();
+    .toUpperCase() || '?';
 }
 
 /** Truncate text with ellipsis */

@@ -101,7 +101,7 @@ export default api;
 // ─── Typed API helpers ─────────────────────────────────────────────────────────
 
 export const authApi = {
-  register: (data: { name: string; email: string; password: string; role?: string }) =>
+  register: (data: { name: string; email: string; password: string; role?: string; phone?: string }) =>
     api.post('/auth/register', data),
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
@@ -239,8 +239,7 @@ export const userApi = {
   toggleActive: (id: string) => api.patch(`/users/${id}/toggle-active`),
 };
 
-export const instructorApi = {
-  apply: (data: {
+export const instructorApi = {  apply: (data: {
     teachingExperience: string;
     expertise: string[];
     bio: string;
@@ -253,4 +252,13 @@ export const instructorApi = {
     api.get('/instructor/applications', { params: status ? { status } : undefined }),
   reviewApplication: (id: string, data: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) =>
     api.patch(`/instructor/applications/${id}`, data),
+};
+
+export const lectureRatingApi = {
+  rate: (lectureId: string, rating: number) =>
+    api.post(`/lecture-ratings/lecture/${lectureId}`, { rating }),
+  getMyRating: (lectureId: string) =>
+    api.get(`/lecture-ratings/lecture/${lectureId}/my`),
+  getSummary: (lectureId: string) =>
+    api.get(`/lecture-ratings/lecture/${lectureId}/summary`),
 };

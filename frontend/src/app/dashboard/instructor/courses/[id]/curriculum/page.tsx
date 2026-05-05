@@ -6,7 +6,7 @@ import { courseApi, lectureApi } from '@/lib/api';
 import { Course, Section, Lecture, LectureResource, LectureQuestion } from '@/types';
 import {
   Plus, Trash2, Upload, ChevronDown, Loader2, Check,
-  Video, Link2, Paperclip, X, HelpCircle,
+  Video, Link2, Paperclip, X, HelpCircle, ImagePlus, Smartphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -37,6 +37,10 @@ export default function CurriculumPage() {
   const [qCorrectIndex, setQCorrectIndex] = useState(0);
   const [qExplanation, setQExplanation] = useState('');
   const [addingQuestion, setAddingQuestion] = useState(false);
+
+  // Thumbnail upload state
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
 
   // Background-processing lectures: poll until videoProcessing becomes false
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -243,6 +247,30 @@ export default function CurriculumPage() {
     }
   };
 
+  const handleThumbnailUpload = async (file: File) => {
+    setUploadingThumbnail(true);
+    try {
+      await courseApi.uploadThumbnail(id, file);
+      await reload();
+      toast.success('Thumbnail updated!');
+    } catch {
+      toast.error('Failed to upload thumbnail');
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
+  const handleToggleMobileOnly = async () => {
+    if (!course) return;
+    try {
+      await courseApi.update(id, { mobileOnly: !course.mobileOnly });
+      await reload();
+      toast.success(course.mobileOnly ? 'Course is now accessible on all devices' : 'Course set to mobile-only access');
+    } catch {
+      toast.error('Failed to update access setting');
+    }
+  };
+
   const handlePublishCourse = async () => {
     try {
       await courseApi.publish(id);
@@ -278,6 +306,93 @@ export default function CurriculumPage() {
           </button>
         )}
       </div>
+
+      {/* Thumbnail upload */}
+      <div className="card p-4 mb-6">
+        <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <ImagePlus className="w-4 h-4 text-primary-500" />
+          Course Thumbnail
+        </h2>
+        <div className="flex items-center gap-5">
+          {course.thumbnail ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={course.thumbnail}
+              alt="Course thumbnail"
+              className="w-32 h-20 object-cover rounded-lg border border-gray-200"
+            />
+          ) : (
+            <div className="w-32 h-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+              <ImagePlus className="w-6 h-6" />
+            </div>
+          )}
+          <div>
+            <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleThumbnailUpload(file);
+                e.target.value = '';
+              }}
+            />
+            <button
+              onClick={() => thumbnailInputRef.current?.click()}
+              disabled={uploadingThumbnail}
+              className="btn-secondary flex items-center gap-2 text-sm"
+            >
+              {uploadingThumbnail ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              {uploadingThumbnail ? 'Uploading…' : course.thumbnail ? 'Change Thumbnail' : 'Upload Thumbnail'}
+            </button>
+            <p className="text-xs text-gray-400 mt-1.5">Recommended: 1280×720px, JPG/PNG</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile-only access toggle */}
+      <button
+        type="button"
+        onClick={handleToggleMobileOnly}
+        className={cn(
+          'w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-colors mb-6',
+          course.mobileOnly
+            ? 'border-primary-500 bg-primary-50'
+            : 'border-gray-200 bg-white hover:border-gray-300',
+        )}
+      >
+        <div className={cn(
+          'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
+          course.mobileOnly ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-500',
+        )}>
+          <Smartphone className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={cn('text-sm font-semibold', course.mobileOnly ? 'text-primary-700' : 'text-gray-700')}>
+            Mobile Device Only
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {course.mobileOnly
+              ? 'Only students on mobile devices can access this course'
+              : 'This course is accessible on all devices — click to restrict to mobile only'}
+          </p>
+        </div>
+        {/* Toggle pill */}
+        <div className={cn(
+          'w-11 h-6 rounded-full transition-colors shrink-0 relative',
+          course.mobileOnly ? 'bg-primary-600' : 'bg-gray-300',
+        )}>
+          <div className={cn(
+            'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
+            course.mobileOnly ? 'translate-x-5' : 'translate-x-0.5',
+          )} />
+        </div>
+      </button>
 
       {/* Sections */}
       <div className="space-y-4 mb-6">

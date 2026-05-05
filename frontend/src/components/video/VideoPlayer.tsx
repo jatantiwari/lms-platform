@@ -43,6 +43,8 @@ export default function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const completedRef = useRef(false);
+  // Throttle progress saves: only call onProgress at most every 30 seconds
+  const lastProgressCallRef = useRef(-30);
 
   // Quality
   const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([]);
@@ -68,6 +70,7 @@ export default function VideoPlayer({
     activeQuestionRef.current = null;
     prevTimeRef.current = 0;
     completedRef.current = false;
+    lastProgressCallRef.current = -30;
     setActiveQuestion(null);
     setSelectedAnswer(null);
     setShowResult(false);
@@ -77,14 +80,14 @@ export default function VideoPlayer({
 
     const setupHls = () => {
       if (Hls.isSupported()) {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1';
-        const apiOrigin = apiBase.replace(/\/api\/v1\/?$/, '');
-
         const hls = new Hls({
           enableWorker: true,
           lowLatencyMode: false,
           xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-            if (url.startsWith(apiOrigin) || url.startsWith('/')) {
+            // Attach auth token to backend proxy requests (/api/v1/hls/...).
+            // Presigned S3 segment URLs do NOT contain /api/v1/ and must NOT
+            // receive an Authorization header (AWS rejects dual-auth requests).
+            if (url.includes('/api/v1/')) {
               const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
               if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
             }
@@ -120,6 +123,17 @@ export default function VideoPlayer({
     };
   }, [src, initialTime]);
 
+  // Pause + blur video when the tab/window is hidden (e.g. screen-recording capture)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -130,7 +144,11 @@ export default function VideoPlayer({
       prevTimeRef.current = curr;
 
       setCurrentTime(curr);
-      onProgress?.(Math.floor(curr));
+      // Throttle progress saves to once every 30 seconds
+      if (Math.floor(curr) - lastProgressCallRef.current >= 30) {
+        lastProgressCallRef.current = Math.floor(curr);
+        onProgress?.(Math.floor(curr));
+      }
 
       // Fire onComplete when 90% of video is watched
       if (!completedRef.current && video.duration > 0 && curr / video.duration >= 0.9) {
@@ -258,6 +276,7 @@ export default function VideoPlayer({
       className="relative bg-black rounded-lg overflow-hidden group select-none"
       onMouseMove={resetControlsTimer}
       onMouseLeave={() => isPlaying && !showQualityMenu && setShowControls(false)}
+      onContextMenu={(e) => e.preventDefault()}
     >
       {title && (
         <div className={cn(
@@ -273,7 +292,10 @@ export default function VideoPlayer({
         ref={videoRef}
         className="w-full aspect-video cursor-pointer"
         onClick={togglePlay}
+        onContextMenu={(e) => e.preventDefault()}
         playsInline
+        disablePictureInPicture
+        controlsList="nodownload noremoteplayback"
       />
 
       {/* Loading spinner */}

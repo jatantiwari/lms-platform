@@ -1,12 +1,13 @@
 import { Router } from 'express';
-import { optionalAuthenticate } from '../middleware/authenticate';
+import { strictOptionalAuthenticate } from '../middleware/authenticate';
 import { streamMasterPlaylist, streamVariantPlaylist } from '../controllers/hls.controller';
 
 const router = Router();
 
-// Optional auth: free lectures are accessible without login;
-// paid lectures require authentication + enrollment (enforced in the controller).
-router.use(optionalAuthenticate);
+// Strict-optional auth: no token → free lectures still accessible;
+// present-but-expired token → 401 so clients can refresh and retry;
+// valid token → enrollment/ownership checked in the controller.
+router.use(strictOptionalAuthenticate);
 
 router.get('/:lectureId/master.m3u8', streamMasterPlaylist);
 router.get('/:lectureId/:filename', streamVariantPlaylist);

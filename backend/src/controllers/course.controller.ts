@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { catchAsync } from '../utils/catchAsync';
 import { sendSuccess, paginationMeta } from '../utils/response';
-import { NotFoundError, ForbiddenError, AppError } from '../utils/AppError';
-import { uploadToS3, removeFromS3 } from '../services/s3.service';
+import { NotFoundError, ForbiddenError, AppError, UnauthorizedError } from '../utils/AppError';
+import { uploadToS3, removeFromS3, s3ImageUrl, extractS3Key } from '../services/s3.service';
 import { getHLSStreamUrl } from '../services/video.service';
 import { getDownloadPresignedUrl } from '../config/s3';
 import { createSlug } from '../utils/slugify';
@@ -21,6 +21,31 @@ async function signResources(resources: unknown): Promise<ResourceEntry[]> {
       return r;
     }),
   );
+}
+
+/** Refresh thumbnail and any nested instructor/user avatar with fresh presigned URLs. */
+async function withFreshImageUrls<T extends Record<string, unknown>>(obj: T): Promise<T> {
+  const out: Record<string, unknown> = { ...obj };
+
+  if ('thumbnail' in out && out.thumbnail) {
+    out.thumbnail = await s3ImageUrl(out.thumbnail as string);
+  }
+  if ('avatar' in out && out.avatar) {
+    out.avatar = await s3ImageUrl(out.avatar as string);
+  }
+  // Nested instructor / user avatars
+  if (out.instructor && typeof out.instructor === 'object') {
+    const inst = out.instructor as Record<string, unknown>;
+    if (inst.avatar) {
+      out.instructor = { ...inst, avatar: await s3ImageUrl(inst.avatar as string) };
+    }
+  }
+  if (out.courses && Array.isArray(out.courses)) {
+    out.courses = await Promise.all(
+      (out.courses as Record<string, unknown>[]).map((c) => withFreshImageUrls(c)),
+    );
+  }
+  return out as T;
 }
 
 // ─── Create Course ────────────────────────────────────────────────────────────
@@ -115,7 +140,8 @@ export const getCourses = catchAsync(async (req: Request, res: Response) => {
     prisma.course.count({ where }),
   ]);
 
-  sendSuccess(res, courses, 'Courses fetched', 200, paginationMeta(Number(page), Number(limit), total));
+  const freshCourses = await Promise.all(courses.map(withFreshImageUrls));
+  sendSuccess(res, freshCourses, 'Courses fetched', 200, paginationMeta(Number(page), Number(limit), total));
 });
 
 // ─── Get Course by Slug ───────────────────────────────────────────────────────
@@ -191,14 +217,15 @@ export const getCourseBySlug = catchAsync(async (req: Request, res: Response) =>
     })),
   );
 
-  sendSuccess(res, { ...course, sections: sectionsWithUrls, isEnrolled }, 'Course fetched');
+  const freshCourse = await withFreshImageUrls({ ...course, sections: sectionsWithUrls, isEnrolled });
+  sendSuccess(res, freshCourse, 'Course fetched');
 });
 
-// ─── Get Course by ID (instructor/admin) ──────────────────────────────────────
+// ─── Get Course by ID (instructor/admin/enrolled student) ────────────────────
 
 export const getCourseById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user!.userId;
+  const userId = req.user?.userId;
 
   const course = await prisma.course.findUnique({
     where: { id },
@@ -215,31 +242,40 @@ export const getCourseById = catchAsync(async (req: Request, res: Response) => {
   });
 
   if (!course) throw new NotFoundError('Course');
-  if (course.instructorId !== userId && req.user!.role !== 'ADMIN') {
-    throw new NotFoundError('Course');
+
+  const isOwner = userId && (course.instructorId === userId || req.user?.role === 'ADMIN');
+
+  if (!isOwner) {
+    // Allow enrolled students to access their course content
+    if (!userId) throw new UnauthorizedError('You must be logged in to access this course');
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId, courseId: course.id } },
+    });
+    if (!enrollment) throw new ForbiddenError('You must be enrolled in this course to access it');
   }
 
-  // Sign lecture URLs so the curriculum editor can show "Video uploaded" status.
-  // videoUrl is never stored in DB (would expire), so we generate it fresh here.
+  // Sign lecture URLs — owners get all (including draft), students only get published
   const sectionsWithUrls = await Promise.all(
     course.sections.map(async (section) => ({
       ...section,
       lectures: await Promise.all(
-        section.lectures.map(async (lecture) => {
-          const { hlsKey, ...rest } = lecture as typeof lecture & { hlsKey?: string | null };
-          const signedResources = await signResources((lecture as unknown as { resources: unknown }).resources);
-          // videoProcessing = raw video has been uploaded to S3 but HLS is not yet ready
-          const videoProcessing = !!(lecture as unknown as { videoKey?: string }).videoKey && !hlsKey;
-          if (hlsKey) {
-            return { ...rest, videoUrl: await getHLSStreamUrl(hlsKey), resources: signedResources, videoProcessing: false };
-          }
-          return { ...rest, resources: signedResources, videoProcessing };
-        }),
+        section.lectures
+          .filter((l) => isOwner || (l as typeof l & { isPublished?: boolean }).isPublished !== false)
+          .map(async (lecture) => {
+            const { hlsKey, ...rest } = lecture as typeof lecture & { hlsKey?: string | null };
+            const signedResources = await signResources((lecture as unknown as { resources: unknown }).resources);
+            const videoProcessing = !!(lecture as unknown as { videoKey?: string }).videoKey && !hlsKey;
+            if (hlsKey) {
+              return { ...rest, videoUrl: await getHLSStreamUrl(hlsKey), resources: signedResources, videoProcessing: false };
+            }
+            return { ...rest, resources: signedResources, videoProcessing };
+          }),
       ),
     })),
   );
 
-  sendSuccess(res, { ...course, sections: sectionsWithUrls }, 'Course fetched');
+  const freshCourse = await withFreshImageUrls({ ...course, sections: sectionsWithUrls } as Record<string, unknown>);
+  sendSuccess(res, freshCourse, 'Course fetched');
 });
 
 // ─── Update Course ─────────────────────────────────────────────────────────────
@@ -276,26 +312,24 @@ export const uploadThumbnail = catchAsync(async (req: Request, res: Response) =>
     throw new ForbiddenError('You do not own this course');
   }
 
-  // Delete old thumbnail
-  if (course.thumbnail) {
-    const oldKey = new URL(course.thumbnail).pathname.slice(1);
-    await removeFromS3(oldKey).catch(() => {});
-  }
+  // Delete old thumbnail — handle both public URLs and presigned URLs\n  if (course.thumbnail) {\n    const oldKey = extractS3Key(course.thumbnail);\n    await removeFromS3(oldKey).catch(() => {});\n  }
 
-  const { url } = await uploadToS3(
+  const { key, url } = await uploadToS3(
     req.file.buffer,
     `thumbnails/${id}`,
     req.file.originalname,
     req.file.mimetype,
   );
 
+  // Store the S3 key (not the presigned URL) so it never expires in the DB
   const updated = await prisma.course.update({
     where: { id },
-    data: { thumbnail: url },
+    data: { thumbnail: key },
     select: { id: true, thumbnail: true },
   });
 
-  sendSuccess(res, updated, 'Thumbnail uploaded');
+  // Return the fresh presigned URL to the caller
+  sendSuccess(res, { ...updated, thumbnail: url }, 'Thumbnail uploaded');
 });
 
 // ─── Publish / Unpublish Course ───────────────────────────────────────────────
@@ -376,7 +410,8 @@ export const getMyCourses = catchAsync(async (req: Request, res: Response) => {
     prisma.course.count({ where: { instructorId } }),
   ]);
 
-  sendSuccess(res, courses, 'Your courses', 200, paginationMeta(page, limit, total));
+  const freshCourses = await Promise.all(courses.map(withFreshImageUrls));
+  sendSuccess(res, freshCourses, 'Your courses', 200, paginationMeta(page, limit, total));
 });
 
 // ─── Admin: Get All Courses ───────────────────────────────────────────────────
@@ -406,5 +441,6 @@ export const getAllCourses = catchAsync(async (req: Request, res: Response) => {
     prisma.course.count({ where }),
   ]);
 
-  sendSuccess(res, courses, 'All courses', 200, paginationMeta(page, limit, total));
+  const freshCourses = await Promise.all(courses.map(withFreshImageUrls));
+  sendSuccess(res, freshCourses, 'All courses', 200, paginationMeta(page, limit, total));
 });

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { catchAsync } from '../utils/catchAsync';
 import { sendSuccess, paginationMeta } from '../utils/response';
 import { NotFoundError, ForbiddenError } from '../utils/AppError';
+import { s3ImageUrl } from '../services/s3.service';
 import prisma from '../config/prisma';
 
 // ─── Enroll (already enrolled check) ──────────────────────────────────────────
@@ -33,20 +34,27 @@ export const getMyEnrollments = catchAsync(async (req: Request, res: Response) =
   // Attach progress percentage to each enrollment
   const enriched = await Promise.all(
     enrollments.map(async (enrollment) => {
-      const [allCount, doneCount] = await Promise.all([
-        prisma.lecture.count({
-          where: { section: { courseId: enrollment.courseId }, isPublished: true },
-        }),
-        prisma.progress.count({
-          where: {
-            userId,
-            completed: true,
-            lecture: { section: { courseId: enrollment.courseId } },
-          },
-        }),
+      const [[allCount, doneCount], signedThumbnail] = await Promise.all([
+        Promise.all([
+          prisma.lecture.count({
+            where: { section: { courseId: enrollment.courseId }, isPublished: true },
+          }),
+          prisma.progress.count({
+            where: {
+              userId,
+              completed: true,
+              lecture: { section: { courseId: enrollment.courseId } },
+            },
+          }),
+        ]),
+        s3ImageUrl(enrollment.course.thumbnail),
       ]);
       return {
         ...enrollment,
+        course: {
+          ...enrollment.course,
+          thumbnail: signedThumbnail,
+        },
         progress: {
           totalLectures: allCount,
           completedCount: doneCount,

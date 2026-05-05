@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore, useUser } from '@/store/authStore';
 import { userApi } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
-import { User, Mail, Globe, FileText, Briefcase, Lock, CheckCircle, Loader2, Camera } from 'lucide-react';
+import { User, Mail, Globe, FileText, Briefcase, Lock, CheckCircle, Loader2, Camera, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
@@ -16,7 +16,21 @@ export default function ProfilePage() {
     bio: user?.bio ?? '',
     headline: user?.headline ?? '',
     website: user?.website ?? '',
+    phone: user?.phone ?? '',
   });
+
+  // Sync form when Zustand rehydrates from localStorage
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name ?? '',
+        bio: user.bio ?? '',
+        headline: user.headline ?? '',
+        website: user.website ?? '',
+        phone: user.phone ?? '',
+      });
+    }
+  }, [user]);
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
@@ -37,6 +51,7 @@ export default function ProfilePage() {
         bio: profileForm.bio,
         headline: profileForm.headline,
         website: profileForm.website,
+        phone: profileForm.phone,
       });
       setUser(data.data);
       toast.success('Profile updated');
@@ -214,6 +229,21 @@ export default function ProfilePage() {
             value={profileForm.website}
             onChange={(e) => setProfileForm((p) => ({ ...p, website: e.target.value }))}
             placeholder="https://yourwebsite.com"
+            className="input-field"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            <span className="flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" /> Phone Number{user.role === 'STUDENT' ? ' *' : ''}
+            </span>
+          </label>
+          <input
+            type="tel"
+            value={profileForm.phone}
+            onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
+            placeholder="+91 9876543210"
             className="input-field"
           />
         </div>

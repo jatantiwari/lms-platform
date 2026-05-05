@@ -1,7 +1,7 @@
 {
+  "/courses/[slug]/page": "app/courses/[slug]/page.js",
+  "/courses/[slug]/learn/page": "app/courses/[slug]/learn/page.js",
   "/page": "app/page.js",
-  "/dashboard/instructor/page": "app/dashboard/instructor/page.js",
   "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/dashboard/instructor/courses/new/page": "app/dashboard/instructor/courses/new/page.js",
-  "/(auth)/forgot-password/page": "app/(auth)/forgot-password/page.js"
+  "/dashboard/student/page": "app/dashboard/student/page.js"
 }

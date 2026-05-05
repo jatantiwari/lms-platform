@@ -13,6 +13,7 @@ export const createCourseSchema = z.object({
   tags: z.array(z.string()).max(10).optional().default([]),
   requirements: z.array(z.string()).optional().default([]),
   objectives: z.array(z.string()).optional().default([]),
+  mobileOnly: z.boolean().optional().default(false),
 });
 
 export const updateCourseSchema = createCourseSchema.partial();
