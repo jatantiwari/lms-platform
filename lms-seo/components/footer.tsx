@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer className="w-full border-t border-border bg-card">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
           {/* Brand Column */}
           <div>
             <Link href="/" className="block mb-4">
@@ -77,7 +77,32 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Legal */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Legal</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+                  Terms &amp; Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/refund-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/data-deletion" className="text-muted-foreground hover:text-primary transition-colors">
+                  Data Deletion
+                </Link>
+              </li>
+            </ul>
+          </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4">Newsletter</h3>
             <p className="text-sm text-muted-foreground mb-3">
@@ -102,6 +127,12 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               © 2026 Financial Freedom Mentor. All rights reserved.
             </p>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms &amp; Conditions</Link>
+              <Link href="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link>
+              <Link href="/data-deletion" className="hover:text-primary transition-colors">Data Deletion</Link>
+            </div>
             <div className="flex items-center gap-4">
               <a href="https://www.instagram.com/yours_ffmentor/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Instagram className="w-5 h-5" />

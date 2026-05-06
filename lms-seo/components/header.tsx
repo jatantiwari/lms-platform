@@ -10,12 +10,13 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
+    { label: 'Home', href: '/' },
+    { label: 'Courses', href: '/courses' },
     { label: 'Curriculum', href: '/curriculum' },
-    // { label: 'Mentors', href: '/mentors' },
     { label: 'Results', href: '/results' },
     { label: 'Who Can Join', href: '/who-can-join' },
-    { label: 'Courses', href: '/courses' },
-    // { label: 'Pricing', href: /'/pricing' },
+    { label: 'About', href: '/about' },
+    { label: 'Contact', href: '/contact' },
   ];
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

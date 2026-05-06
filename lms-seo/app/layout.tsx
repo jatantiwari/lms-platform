@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
@@ -6,16 +6,17 @@ import './globals.css'
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: 'Financial Freedom Mentor - Learn, Invest, Grow | Ride the Bull, Rule the Bear',
   description: 'Master stock market trading with Financial Freedom Mentor. Learn proven strategies, ride the bull, and rule the bear. Expert mentorship for financial freedom.',
   keywords: ['stock market', 'trading', 'investing', 'mentorship', 'financial freedom', 'bull market', 'bear market', 'trading strategies', 'wealth building'],
   generator: 'v0.app',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
