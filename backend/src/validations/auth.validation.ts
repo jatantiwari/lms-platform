@@ -46,6 +46,10 @@ export const verifyEmailSchema = z.object({
   code: z.string().length(6, 'Verification code must be 6 digits').regex(/^\d{6}$/),
 });
 
+export const verifyPhoneOtpSchema = z.object({
+  otp: z.string().length(6, 'OTP must be 6 digits').regex(/^\d{6}$/),
+});
+
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   bio: z.string().max(500).optional(),

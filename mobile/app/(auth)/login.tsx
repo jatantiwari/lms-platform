@@ -35,6 +35,8 @@ export default function LoginScreen() {
       const user = await login(data.email, data.password);
       if (!user.emailVerified) {
         router.replace('/(auth)/verify-email');
+      } else if (!user.phoneVerified) {
+        router.replace('/(auth)/verify-phone');
       } else {
         router.replace('/(tabs)');
       }

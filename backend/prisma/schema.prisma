@@ -63,6 +63,8 @@ model User {
   verificationCodeExp   DateTime?
   resetToken            String?
   resetTokenExp         DateTime?
+  phoneVerified         Boolean   @default(false)
+  phoneOtpSession       String?   // 2Factor session ID (cleared after verification)
   instructorApproved    Boolean   @default(false)
   isActive              Boolean   @default(true)
   pushToken             String?

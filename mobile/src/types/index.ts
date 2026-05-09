@@ -15,6 +15,7 @@ export interface User {
   website?: string;
   phone?: string;
   emailVerified: boolean;
+  phoneVerified: boolean;
   instructorApproved: boolean;
   createdAt: string;
   _count?: { enrollments: number; courses: number };

@@ -100,11 +100,11 @@ export function CurriculumBreakdown() {
           <span className="inline-block text-xs font-bold tracking-[0.2em] uppercase text-primary border border-primary/30 bg-primary/10 px-4 py-1.5 rounded-full">
             Curriculum Breakdown
           </span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground leading-tight">
             What You'll{' '}
             <span className="text-primary">Learn</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base md:text-lg text-muted-foreground">
             Six power-packed modules taking you from zero to professional — theory, strategy, live execution, and mindset.
           </p>
         </div>

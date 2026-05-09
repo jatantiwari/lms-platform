@@ -75,10 +75,10 @@ export default function TestimonialsPage() {
         <section className="w-full py-16 md:py-24 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6">
                 Success Stories from Our Students
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 See how real traders transformed their financial lives through our mentorship program.
               </p>
             </div>
@@ -119,7 +119,7 @@ export default function TestimonialsPage() {
         {/* Video Testimonial Section */}
         <section className="w-full py-16 md:py-24 bg-card border-y border-border">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-bold text-foreground text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground text-center mb-12">
               Watch Real Student Testimonials
             </h2>
 

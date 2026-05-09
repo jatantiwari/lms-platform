@@ -113,10 +113,10 @@ export default function WhoCanJoinPage() {
                 <Users className="w-4 h-4 text-primary" />
                 <span className="text-sm font-semibold text-primary tracking-wide">For Everyone</span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Who Can <span className="text-primary">Join?</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Our commodity trading mentorship is designed for everyone — whether you're a student, professional, entrepreneur, or retiree. Find your perfect plan.
               </p>
             </div>
@@ -232,7 +232,7 @@ export default function WhoCanJoinPage() {
             <h2 className="text-4xl font-extrabold text-foreground">
               Ready to Start Your <span className="text-primary">Journey?</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto">
               Join thousands of successful commodity traders. Start at any level — our mentors will guide you every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

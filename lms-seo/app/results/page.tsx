@@ -78,10 +78,10 @@ export default function ResultsPage() {
                   Student Success Stories
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Results That <span className="text-primary">Speak</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Real results from real students who mastered commodity trading through our mentorship programs.
               </p>
             </div>

@@ -38,6 +38,9 @@ const envSchema = z.object({
   // The instructor user ID that all SEO registrations are assigned to
   DEFAULT_INSTRUCTOR_ID: z.string().min(1).optional().default(''),
 
+  // 2Factor SMS OTP (https://2factor.in)
+  TWOFACTOR_API_KEY: z.string().optional().default(''),
+
   // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
 });

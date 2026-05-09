@@ -14,7 +14,7 @@ export default function RefundPolicyPage() {
       <main>
         <section className="w-full py-16 md:py-24 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-4">Refund Policy</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-4">Refund Policy</h1>
             <p className="text-muted-foreground">Last updated: May 2026</p>
           </div>
         </section>

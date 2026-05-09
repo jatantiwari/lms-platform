@@ -33,7 +33,7 @@ export function CTASection({
         <div className="relative z-10 text-center space-y-8 py-12 md:py-16">
           {/* Content */}
           <div className="space-y-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground text-balance">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-foreground text-balance">
               {title}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

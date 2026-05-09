@@ -51,8 +51,13 @@ export default function VerifyEmailScreen() {
       await authApi.verifyEmail(code);
       const user = await fetchMe();
       Toast.show({ type: 'success', text1: 'Email verified! 🎉' });
-      if (user) router.replace('/(tabs)');
-      else router.replace('/(auth)/login');
+      if (!user) {
+        router.replace('/(auth)/login');
+      } else if (!user.phoneVerified) {
+        router.replace('/(auth)/verify-phone');
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
         ?? 'Invalid code';

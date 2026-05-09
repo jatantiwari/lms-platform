@@ -26,10 +26,10 @@ export default function CurriculumPage() {
                   Complete Learning Roadmap
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Detailed <span className="text-primary">Curriculum</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Module-by-module breakdown across all three plans — from commodity basics to live execution and personal mentorship.
               </p>
             </div>

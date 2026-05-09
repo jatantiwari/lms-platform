@@ -74,10 +74,10 @@ export default function CoursesPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
                 <span className="text-sm font-semibold text-primary tracking-wide">Commodity Trading Mentorship</span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Simple, Transparent <span className="text-primary">Pricing</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Three plans designed to take you from complete beginner to professional commodity trader. No hidden fees.
               </p>
             </div>

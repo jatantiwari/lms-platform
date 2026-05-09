@@ -34,6 +34,8 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
       if (!inAuthGroup) router.replace('/(auth)/login');
     } else if (!user.emailVerified) {
       router.replace('/(auth)/verify-email');
+    } else if (!user.phoneVerified) {
+      if (segments[1] !== 'verify-phone') router.replace('/(auth)/verify-phone');
     } else if (inAuthGroup) {
       router.replace('/(tabs)');
     }

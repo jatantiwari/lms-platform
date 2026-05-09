@@ -15,6 +15,7 @@ import {
 } from '../utils/jwt';
 import { sendEmail, verificationEmailTemplate, passwordResetTemplate } from '../utils/email';
 import { s3ImageUrl } from '../services/s3.service';
+import { env } from '../config/env';
 import prisma from '../config/prisma';
 import crypto from 'crypto';
 
@@ -34,7 +35,7 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 
   const user = await prisma.user.create({
     data: { name, email, password: hashed, role, phone: phone ?? null, verificationCode, verificationCodeExp },
-    select: { id: true, name: true, email: true, role: true, avatar: true, phone: true, emailVerified: true, instructorApproved: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, avatar: true, phone: true, emailVerified: true, phoneVerified: true, instructorApproved: true, createdAt: true },
   });
 
   // Send verification email (non-blocking)
@@ -206,6 +207,7 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
       website: true,
       phone: true,
       emailVerified: true,
+      phoneVerified: true,
       instructorApproved: true,
       createdAt: true,
       _count: {
@@ -262,6 +264,76 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 
   sendSuccess(res, updated, 'Email verified successfully');
+});
+
+// ─── Resend Verification ──────────────────────────────────────────────────────
+
+// ─── Send Phone OTP ─────────────────────────────────────────────────────────
+
+export const sendPhoneOtp = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, phone: true, phoneVerified: true },
+  });
+  if (!user) throw new NotFoundError('User');
+  if (user.phoneVerified) throw new AppError('Phone number is already verified', 400);
+  if (!user.phone) throw new AppError('No phone number found. Update your profile first.', 400);
+
+  if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
+
+  // Strip to digits only — 2Factor expects E.164 without + for Indian numbers
+  const phone = user.phone.replace(/\D/g, '').replace(/^91/, '').slice(-10);
+
+  const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN`;
+  const tfRes = await fetch(url);
+  const tfData = (await tfRes.json()) as { Status: string; Details: string };
+
+  if (tfData.Status !== 'Success') {
+    throw new AppError(`Failed to send OTP: ${tfData.Details}`, 502);
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { phoneOtpSession: tfData.Details },
+  });
+
+  sendSuccess(res, {}, 'OTP sent to your registered mobile number');
+});
+
+// ─── Verify Phone OTP ────────────────────────────────────────────────────────
+
+export const verifyPhoneOtp = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { otp } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, phoneOtpSession: true, phoneVerified: true },
+  });
+  if (!user) throw new NotFoundError('User');
+  if (user.phoneVerified) throw new AppError('Phone number is already verified', 400);
+  if (!user.phoneOtpSession) {
+    throw new AppError('No OTP session found. Please request a new OTP first.', 400);
+  }
+
+  if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
+
+  const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/VERIFY/${user.phoneOtpSession}/${otp}`;
+  const tfRes = await fetch(url);
+  const tfData = (await tfRes.json()) as { Status: string; Details: string };
+
+  if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+    throw new AppError('Invalid or expired OTP. Please try again.', 400);
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { phoneVerified: true, phoneOtpSession: null },
+  });
+
+  sendSuccess(res, {}, 'Phone number verified successfully');
 });
 
 // ─── Resend Verification ──────────────────────────────────────────────────────

@@ -18,11 +18,11 @@ export default function AboutPage() {
         <section className="w-full py-16 md:py-24 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6">
                 Financial Freedom Mentor
               </h1>
               <p className="text-2xl font-bold text-primary mb-4">Ride the Bull. Rule the Bear.</p>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Founded on a mission to empower traders with expert mentorship and achieve lasting financial freedom through proven trading strategies.
               </p>
             </div>
@@ -34,7 +34,7 @@ export default function AboutPage() {
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-4xl font-bold text-foreground mb-6">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-6">
                   Our Story
                 </h2>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
@@ -87,7 +87,7 @@ export default function AboutPage() {
         <section className="w-full py-16 md:py-24">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-12">
-              <h2 className="text-4xl font-bold text-foreground mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Our Core Values
               </h2>
             </div>

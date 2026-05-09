@@ -46,11 +46,11 @@ export function ProgramOverview() {
           <span className="inline-block text-xs font-bold tracking-[0.2em] uppercase text-primary border border-primary/30 bg-primary/10 px-4 py-1.5 rounded-full">
             Program Overview
           </span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground leading-tight">
             Trade Commodities Like an{' '}
             <span className="text-primary">Institution</span>
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
             This mentorship is designed for{' '}
             <strong className="text-foreground">beginners and intermediate traders</strong>{' '}
             who want to build consistent income through commodity markets — MCX &amp; global

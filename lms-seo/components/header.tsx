@@ -23,8 +23,8 @@ export function Header() {
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-20 h-20 relative">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 relative flex-shrink-0">
               <Image 
                 src="/logo.png" 
                 alt="Financial Freedom Mentor" 
@@ -33,8 +33,8 @@ export function Header() {
                 className="w-full h-full"
               />
             </div>
-            <div className="hidden sm:block">
-              <div className="text-lg font-bold text-primary">Financial Freedom</div>
+            <div>
+              <div className="text-sm sm:text-lg font-bold text-primary leading-tight">Financial Freedom</div>
               <div className="text-xs text-foreground">Mentor</div>
             </div>
           </Link>
@@ -88,13 +88,8 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
-            <div className="flex gap-2 mt-4">
-              <Link href="/courses" className="flex-1" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
-                  Pricing
-                </Button>
-              </Link>
-              <Link href="/register" className="flex-1" onClick={() => setIsOpen(false)}>
+            <div className="pt-4 px-4">
+              <Link href="/register" onClick={() => setIsOpen(false)}>
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   Register
                 </Button>

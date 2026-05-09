@@ -93,10 +93,10 @@ export default function MentorsPage() {
                   Expert Team
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6">
                 Meet Our Expert Mentors
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Learn from the best. Our team of 50+ experienced traders and analysts with combined 500+ years of trading expertise.
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function MentorsPage() {
         <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-4xl font-bold text-foreground mb-12 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
                 Why Choose Our Mentors?
               </h2>
               <div className="grid md:grid-cols-2 gap-8">

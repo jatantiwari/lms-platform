@@ -9,6 +9,8 @@ import {
   getMe,
   verifyEmail,
   resendVerification,
+  sendPhoneOtp,
+  verifyPhoneOtp,
 } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
@@ -19,6 +21,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  verifyPhoneOtpSchema,
 } from '../validations/auth.validation';
 
 const router = Router();
@@ -34,5 +37,9 @@ router.post('/logout', authenticate, logout);
 router.get('/me', authenticate, getMe);
 router.post('/verify-email', authenticate, validate(verifyEmailSchema), verifyEmail);
 router.post('/resend-verification', authenticate, resendVerification);
+
+// Phone (SIM) verification
+router.post('/send-phone-otp', authenticate, sendPhoneOtp);
+router.post('/verify-phone-otp', authenticate, validate(verifyPhoneOtpSchema), verifyPhoneOtp);
 
 export default router;

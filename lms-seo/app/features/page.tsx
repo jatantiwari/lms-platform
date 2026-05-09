@@ -18,10 +18,10 @@ export default function FeaturesPage() {
         <section className="w-full py-16 md:py-24 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6">
                 Powerful Features for Your Trading Success
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Everything you need to become a confident and profitable trader, all in one comprehensive platform.
               </p>
             </div>

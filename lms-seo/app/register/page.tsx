@@ -207,10 +207,10 @@ export default function RegisterPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
                 <span className="text-sm font-semibold text-primary tracking-wide">Commodity Trading Mentorship</span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Student <span className="text-primary">Registration</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base md:text-xl text-muted-foreground">
                 Fill out the form below — your account is created instantly and payment is processed securely via Razorpay.
               </p>
             </div>

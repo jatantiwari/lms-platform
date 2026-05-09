@@ -95,6 +95,8 @@ export const authApi = {
     api.post('/auth/reset-password', { token, password }),
   verifyEmail: (code: string) => api.post('/auth/verify-email', { code }),
   resendVerification: () => api.post('/auth/resend-verification'),
+  sendPhoneOtp: () => api.post('/auth/send-phone-otp'),
+  verifyPhoneOtp: (otp: string) => api.post('/auth/verify-phone-otp', { otp }),
 };
 
 export const courseApi = {

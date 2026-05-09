@@ -28,10 +28,10 @@ export default function Home() {
         <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-4xl font-bold text-foreground mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-6">
                 Who Can Join?
               </h2>
-              <p className="text-xl text-muted-foreground mb-12">
+              <p className="text-base md:text-xl text-muted-foreground mb-12">
                 Financial Freedom Mentor is designed for everyone - whether you're a student, working professional, entrepreneur, or retiree. 
                 Find your perfect learning path.
               </p>

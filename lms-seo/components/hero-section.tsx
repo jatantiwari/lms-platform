@@ -20,7 +20,7 @@ export function HeroSection() {
 
       {/* Hero content overlay */}
       <div className="relative z-20 w-full">
-        <div className="container max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pb-28 pt-40 md:pt-0">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pb-20 sm:pb-28 pt-32 md:pt-0">
           <div className="max-w-2xl space-y-6">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/40 backdrop-blur-sm">
@@ -31,14 +31,14 @@ export function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-xl">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-xl">
               Commodity{' '}
               <span className="text-primary">Trading</span>
               <br />
               Mentorship Program
             </h1>
 
-            <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-lg">
+            <p className="text-base md:text-xl text-white/80 leading-relaxed max-w-lg">
               Master Gold, Crude Oil, and Global Commodities Like a Professional
             </p>
 

@@ -79,7 +79,7 @@ export function CourseShowcase() {
           <span className="inline-block text-xs font-bold tracking-[0.2em] uppercase text-primary border border-primary/30 bg-primary/10 px-4 py-1.5 rounded-full">
             Featured Courses
           </span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground leading-tight">
             Choose Your{' '}
             <span className="text-primary">Trading Plan</span>
           </h2>
