@@ -9,6 +9,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { courseApi, enrollmentApi } from '../../src/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { CourseCard } from '../../src/components/course/CourseCard';
+import { DeviceTrustGate } from '../../src/components/DeviceVerification';
 import { Colors, Spacing } from '../../src/constants/theme';
 import { Course, Enrollment } from '../../src/types';
 
@@ -64,26 +65,33 @@ export default function HomeScreen() {
           ) : myEnrollments && myEnrollments.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.hScroll}>
               {myEnrollments.map((en) => (
-                <TouchableOpacity
+                <DeviceTrustGate
                   key={en.id}
-                  style={styles.continueCard}
-                  onPress={() => router.push(`/learn/${en.courseId}`)}
+                  onAccess={() => router.push(`/learn/${en.courseId}`)}
                 >
-                  {en.course?.thumbnail ? (
-                    <Image source={{ uri: en.course.thumbnail }} style={styles.continueThumbnail} />
-                  ) : (
-                    <View style={[styles.continueThumbnail, styles.thumbnailFallback]}>
-                      <Ionicons name="book-outline" size={28} color={Colors.primary} />
-                    </View>
+                  {({ onPress, isChecking }) => (
+                    <TouchableOpacity
+                      style={styles.continueCard}
+                      onPress={onPress}
+                      disabled={isChecking}
+                    >
+                      {en.course?.thumbnail ? (
+                        <Image source={{ uri: en.course.thumbnail }} style={styles.continueThumbnail} />
+                      ) : (
+                        <View style={[styles.continueThumbnail, styles.thumbnailFallback]}>
+                          <Ionicons name="book-outline" size={28} color={Colors.primary} />
+                        </View>
+                      )}
+                      <View style={styles.continueInfo}>
+                        <Text style={styles.continueTitle} numberOfLines={2}>{en.course?.title ?? 'Untitled'}</Text>
+                        <View style={styles.progressBar}>
+                          <View style={[styles.progressFill, { width: `${en.completionPercentage ?? 0}%` as unknown as number }]} />
+                        </View>
+                        <Text style={styles.progressLabel}>{en.completionPercentage ?? 0}% complete</Text>
+                      </View>
+                    </TouchableOpacity>
                   )}
-                  <View style={styles.continueInfo}>
-                    <Text style={styles.continueTitle} numberOfLines={2}>{en.course?.title ?? 'Untitled'}</Text>
-                    <View style={styles.progressBar}>
-                      <View style={[styles.progressFill, { width: `${en.completionPercentage ?? 0}%` as unknown as number }]} />
-                    </View>
-                    <Text style={styles.progressLabel}>{en.completionPercentage ?? 0}% complete</Text>
-                  </View>
-                </TouchableOpacity>
+                </DeviceTrustGate>
               ))}
             </ScrollView>
           ) : (

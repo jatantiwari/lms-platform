@@ -11,6 +11,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { sendLocalNotification } from '../../src/lib/notifications';
 import { StarRating } from '../../src/components/ui/StarRating';
 import { Ionicons } from '@expo/vector-icons';
+import { DeviceTrustGate } from '../../src/components/DeviceVerification';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../../src/constants/theme';
 import { Course, Section as CourseSection, Review } from '../../src/types';
@@ -60,7 +61,8 @@ export default function CourseDetailScreen() {
         Toast.show({ type: 'success', text1: 'Enrolled successfully!' });
         qc.invalidateQueries({ queryKey: ['enroll-check', data?.id] });
         qc.invalidateQueries({ queryKey: ['enrollments'] });
-        router.push(`/learn/${data?.slug}`);
+        // Device trust gate will be triggered when user taps "Continue Learning"
+        // No direct push here — user will see the updated button
       } else {
         // TODO: integrate Razorpay SDK / WebView payment flow
         Alert.alert('Payment', 'Razorpay payment flow (integrate SDK here).\nOrder ID: ' + orderData.id);
@@ -156,12 +158,16 @@ export default function CourseDetailScreen() {
             )}
           </View>
           {isEnrolled ? (
-            <TouchableOpacity style={styles.continueBtn} onPress={() => router.push(`/learn/${data.slug}`)}>
-              <View style={styles.continueBtnInner}>
-                <Ionicons name="play-circle" size={16} color={Colors.white} />
-                <Text style={styles.continueBtnText}> Continue Learning</Text>
-              </View>
-            </TouchableOpacity>
+            <DeviceTrustGate onAccess={() => router.push(`/learn/${data.slug}`)}>
+              {({ onPress, isChecking }) => (
+                <TouchableOpacity style={styles.continueBtn} onPress={onPress} disabled={isChecking}>
+                  <View style={styles.continueBtnInner}>
+                    <Ionicons name="play-circle" size={16} color={Colors.white} />
+                    <Text style={styles.continueBtnText}> Continue Learning</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </DeviceTrustGate>
           ) : user ? (
             <TouchableOpacity
               style={styles.enrollBtn}
@@ -207,23 +213,41 @@ export default function CourseDetailScreen() {
                 <Text style={styles.sectionTitle}>{sec.title}</Text>
                 <Text style={styles.sectionToggle}>{expandedSections.has(sec.id) ? '▲' : '▼'}</Text>
               </TouchableOpacity>
-              {expandedSections.has(sec.id) && sec.lectures.map((lec) => (
-                <TouchableOpacity
-                  key={lec.id}
-                  style={styles.lectureItem}
-                  onPress={lec.isFree || isEnrolled ? () => router.push(`/learn/${data.slug}?lectureId=${lec.id}`) : undefined}
-                >
-                  <View style={styles.lectureIconWrap}>
-                    <Ionicons
-                      name={lec.isFree ? 'lock-open-outline' : isEnrolled ? 'play-circle-outline' : 'lock-closed-outline'}
-                      size={16}
-                      color={lec.isFree || isEnrolled ? Colors.primary : Colors.gray400}
-                    />
-                  </View>
-                  <Text style={styles.lectureTitle} numberOfLines={1}>{lec.title}</Text>
-                  {lec.duration && <Text style={styles.lectureDuration}>{Math.round(lec.duration / 60)}m</Text>}
-                </TouchableOpacity>
-              ))}
+              {expandedSections.has(sec.id) && sec.lectures.map((lec) => {
+                const canAccess = lec.isFree || isEnrolled;
+                return canAccess ? (
+                  <DeviceTrustGate
+                    key={lec.id}
+                    onAccess={() => router.push(`/learn/${data.slug}?lectureId=${lec.id}`)}
+                  >
+                    {({ onPress, isChecking }) => (
+                      <TouchableOpacity
+                        style={styles.lectureItem}
+                        onPress={onPress}
+                        disabled={isChecking}
+                      >
+                        <View style={styles.lectureIconWrap}>
+                          <Ionicons
+                            name={lec.isFree ? 'lock-open-outline' : 'play-circle-outline'}
+                            size={16}
+                            color={Colors.primary}
+                          />
+                        </View>
+                        <Text style={styles.lectureTitle} numberOfLines={1}>{lec.title}</Text>
+                        {lec.duration && <Text style={styles.lectureDuration}>{Math.round(lec.duration / 60)}m</Text>}
+                      </TouchableOpacity>
+                    )}
+                  </DeviceTrustGate>
+                ) : (
+                  <TouchableOpacity key={lec.id} style={styles.lectureItem} onPress={undefined}>
+                    <View style={styles.lectureIconWrap}>
+                      <Ionicons name="lock-closed-outline" size={16} color={Colors.gray400} />
+                    </View>
+                    <Text style={styles.lectureTitle} numberOfLines={1}>{lec.title}</Text>
+                    {lec.duration && <Text style={styles.lectureDuration}>{Math.round(lec.duration / 60)}m</Text>}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           ))}
         </SectionBlock>

@@ -1,0 +1,200 @@
+import { Request, Response } from 'express';
+import { catchAsync } from '../utils/catchAsync';
+import { sendSuccess } from '../utils/response';
+import { AppError, ForbiddenError } from '../utils/AppError';
+import { deviceTrustService } from '../services/deviceTrust.service';
+import {
+  sendDeviceTrustOtpSchema,
+  verifyDeviceTrustOtpSchema,
+  checkDeviceTrustSchema,
+  updatePhoneSchema,
+} from '../validations/deviceTrust.validation';
+import prisma from '../config/prisma';
+import { env } from '../config/env';
+
+// ─── Check device trust status ────────────────────────────────────────────────
+
+export const checkDeviceTrust = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const parsed = checkDeviceTrustSchema.safeParse(req.query);
+  if (!parsed.success) {
+    throw new AppError(`Invalid query: ${parsed.error.issues[0].message}`, 400);
+  }
+
+  const result = await deviceTrustService.checkTrustStatus(userId, parsed.data);
+  sendSuccess(res, result, 'Device trust status');
+});
+
+// ─── Send OTP for device trust verification ───────────────────────────────────
+
+export const sendDeviceTrustOtp = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const parsed = sendDeviceTrustOtpSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new AppError(`Validation error: ${parsed.error.issues[0].message}`, 400);
+  }
+
+  const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+    ?? req.socket.remoteAddress
+    ?? 'unknown';
+
+  try {
+    const result = await deviceTrustService.sendDeviceTrustOtp(userId, parsed.data, ipAddress);
+    sendSuccess(res, result, `OTP sent to your registered mobile number`);
+  } catch (err: unknown) {
+    const e = err as Error & { code?: string; statusCode?: number };
+    if (e.code === 'PHONE_MISMATCH') {
+      throw new ForbiddenError(e.message);
+    }
+    throw new AppError(e.message ?? 'Failed to send OTP', e.statusCode ?? 500);
+  }
+});
+
+// ─── Verify OTP + mark device as trusted ──────────────────────────────────────
+
+export const verifyDeviceTrustOtp = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const parsed = verifyDeviceTrustOtpSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new AppError(`Validation error: ${parsed.error.issues[0].message}`, 400);
+  }
+
+  const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+    ?? req.socket.remoteAddress
+    ?? 'unknown';
+
+  try {
+    const result = await deviceTrustService.verifyDeviceTrustOtp(userId, parsed.data, ipAddress);
+    sendSuccess(res, result, 'Device verified successfully. Course access granted.');
+  } catch (err: unknown) {
+    const e = err as Error & { statusCode?: number };
+    throw new AppError(e.message ?? 'Verification failed', e.statusCode ?? 400);
+  }
+});
+
+// ─── One-time phone number update ─────────────────────────────────────────────
+
+export const updatePhone = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const parsed = updatePhoneSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new AppError(`Validation error: ${parsed.error.issues[0].message}`, 400);
+  }
+
+  const { newPhone, otp } = parsed.data;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, phone: true, isPhoneUpdated: true, deviceTrustOtpSession: true },
+  });
+  if (!user) throw new AppError('User not found', 404);
+  if (user.isPhoneUpdated) {
+    throw new ForbiddenError('Phone number can only be changed once. This user has already updated their phone number.');
+  }
+
+  const normalizePhone = (p: string) => p.replace(/\D/g, '').replace(/^91/, '').slice(-10);
+  const normalizedNew = normalizePhone(newPhone);
+  const normalizedCurrent = user.phone ? normalizePhone(user.phone) : '';
+
+  if (normalizedNew === normalizedCurrent) {
+    throw new AppError('New phone number is the same as the current phone number.', 400);
+  }
+
+  // Phase 1: No OTP yet → send OTP to the NEW number
+  if (!otp) {
+    if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
+
+    const phone10 = normalizePhone(newPhone);
+    const templateSegment = env.SMS_RETRIEVER_TEMPLATE ? `/${env.SMS_RETRIEVER_TEMPLATE}` : '';
+    const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/AUTOGEN${templateSegment}`;
+    const tfRes = await fetch(url);
+    const tfData = (await tfRes.json()) as { Status: string; Details: string };
+
+    if (tfData.Status !== 'Success') {
+      throw new AppError(`Failed to send OTP to new number: ${tfData.Details}`, 502);
+    }
+
+    // Store session and pending new phone in deviceTrustOtpSession field with a prefix
+    await prisma.user.update({
+      where: { id: userId },
+      data: { deviceTrustOtpSession: `PHONE_CHANGE:${newPhone}:${tfData.Details}` },
+    });
+
+    sendSuccess(res, {}, `OTP sent to ${newPhone.slice(0, 3)}****${newPhone.slice(-3)}`);
+    return;
+  }
+
+  // Phase 2: OTP provided → verify and finalize
+  if (!user.deviceTrustOtpSession?.startsWith('PHONE_CHANGE:')) {
+    throw new AppError('No phone change session found. Please initiate the process again.', 400);
+  }
+
+  const [, sessionPhone, sessionId] = user.deviceTrustOtpSession.split(':');
+
+  // Ensure the OTP is for the same new phone
+  if (normalizePhone(sessionPhone) !== normalizedNew) {
+    throw new AppError('Phone number mismatch. Please restart the process.', 400);
+  }
+
+  if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
+
+  const verifyUrl = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/VERIFY/${sessionId}/${otp}`;
+  const tfRes = await fetch(verifyUrl);
+  const tfData = (await tfRes.json()) as { Status: string; Details: string };
+
+  if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+    throw new AppError('Invalid or expired OTP.', 400);
+  }
+
+  const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+    ?? req.socket.remoteAddress
+    ?? 'unknown';
+
+  // Update phone + log + revoke device trust (force re-verification on all devices)
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        originalPhone: user.phone,
+        phone: newPhone,
+        isPhoneUpdated: true,
+        phoneUpdatedAt: new Date(),
+        phoneVerified: true,
+        deviceTrustOtpSession: null,
+      },
+    }),
+    prisma.phoneChangeLog.create({
+      data: {
+        userId,
+        previousPhone: user.phone ?? '',
+        newPhone,
+        ipAddress,
+        platform: 'mobile',
+        verifiedViaOtp: true,
+      },
+    }),
+    // Force all active devices to re-verify with new phone
+    prisma.deviceBinding.updateMany({
+      where: { userId, isActive: true },
+      data: {
+        isTrustedForCourseAccess: false,
+        requiresReverification: true,
+        verifiedMobileNumber: null,
+      },
+    }),
+  ]);
+
+  // Audit log
+  await prisma.verificationLog.create({
+    data: {
+      userId,
+      type: 'PHONE_CHANGE',
+      status: 'SUCCESS',
+      phone: `${newPhone.slice(0, 3)}****${newPhone.slice(-3)}`,
+      ipAddress,
+      platform: 'mobile',
+    },
+  });
+
+  sendSuccess(res, {}, 'Phone number updated successfully. Please re-verify your device for course access.');
+});

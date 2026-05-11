@@ -33,7 +33,8 @@
         "WRITE_EXTERNAL_STORAGE",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
-        "RECEIVE_SMS"
+        "READ_PHONE_STATE",
+        "READ_PHONE_NUMBERS"
       ]
     },
     "web": {
@@ -57,10 +58,16 @@
         {
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { User } from '../types';
 import { authApi, setAccessToken, setRefreshToken, clearTokens, getAccessToken } from '../lib/api';
 import * as SecureStore from 'expo-secure-store';
+import { useDeviceTrustStore } from './deviceTrustStore';
 
 interface AuthState {
   user: User | null;
@@ -43,6 +44,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try { await authApi.logout(); } catch { /* ignore */ }
     await clearTokens();
     await SecureStore.deleteItemAsync('user');
+    // Clear device trust state on logout for security
+    await useDeviceTrustStore.getState().clearTrust();
     set({ user: null });
   },
 

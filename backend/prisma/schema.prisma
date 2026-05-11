@@ -57,6 +57,11 @@ model User {
   headline       String?
   website        String?
   phone          String?
+  /// Original number set at registration — immutable after first phone verification
+  originalPhone         String?
+  /// Set to true after the one-time allowed phone number change
+  isPhoneUpdated        Boolean   @default(false)
+  phoneUpdatedAt        DateTime?
   refreshToken          String?
   emailVerified         Boolean   @default(false)
   verificationCode      String?
@@ -65,6 +70,8 @@ model User {
   resetTokenExp         DateTime?
   phoneVerified         Boolean   @default(false)
   phoneOtpSession       String?   // 2Factor session ID (cleared after verification)
+  /// Temp OTP session for device-trust verification (separate from account phone verify)
+  deviceTrustOtpSession String?
   instructorApproved    Boolean   @default(false)
   isActive              Boolean   @default(true)
   pushToken             String?
@@ -78,6 +85,9 @@ model User {
   progress                Progress[]
   reviews                 Review[]
   lectureRatings          LectureRating[]
+  deviceBindings          DeviceBinding[]    @relation("UserDevices")
+  verificationLogs        VerificationLog[]
+  phoneChangeLogs         PhoneChangeLog[]
   payments                Payment[]
   instructorProfile       InstructorProfile?
   seoRegistrations        SeoRegistration[]  @relation("StudentSeoReg")
@@ -85,6 +95,130 @@ model User {
 
   @@index([role])
   @@map("users")
+}
+
+// ─── Device Binding ───────────────────────────────────────────────────────────
+// Stores hardware fingerprints bound to user sessions.
+// Enables Google Pay-style device-bound authentication.
+
+model DeviceBinding {
+  id            String   @id @default(cuid()) @map("_id")
+  userId        String
+
+  /// Primary identifier — first 32 hex chars of SHA-256(ANDROID_ID|BUILD_FINGERPRINT|BOARD|HARDWARE)
+  deviceId      String
+
+  /// Full 64-char SHA-256 hash — used for timing-safe fingerprint comparison
+  fingerprintHash String
+
+  /// Android Build.FINGERPRINT (optional, for diagnostics)
+  buildFingerprint String?
+
+  model         String?
+  manufacturer  String?
+  sdkVersion    Int?
+  osName        String?
+  osVersion     String?
+  platform      String   @default("android")  // android | ios | web
+
+  isEmulator    Boolean  @default(false)
+  isRooted      Boolean  @default(false)
+  isDeveloperOptionsEnabled Boolean @default(false)
+
+  /// Whether this device still needs phone OTP re-verification
+  requiresReverification Boolean @default(true)
+
+  /// Whether this device is fully trusted for course access
+  isTrustedForCourseAccess Boolean @default(false)
+
+  /// The mobile number that was successfully verified on this device
+  verifiedMobileNumber  String?
+
+  /// App version at time of last trust verification
+  appVersion            String?
+
+  /// Carrier / SIM metadata captured during verification
+  carrierName           String?
+  simSlotIndex          Int?
+
+  /// How many times this device has been verified
+  verificationCount     Int      @default(0)
+
+  /// When device trust was last granted
+  trustedAt             DateTime?
+
+  /// Soft-delete: false = device revoked by user
+  isActive      Boolean  @default(true)
+
+  lastSeenAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation("UserDevices", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, deviceId])
+  @@map("device_bindings")
+}
+
+// ─── Verification Log ─────────────────────────────────────────────────────────
+// Audit trail of every device trust verification attempt (pass and fail).
+
+model VerificationLog {
+  id              String   @id @default(cuid()) @map("_id")
+  userId          String
+  deviceId        String?
+  deviceBindingId String?
+
+  type            String   // DEVICE_TRUST_OTP | PHONE_CHANGE | ACCOUNT_PHONE_OTP
+  status          String   // SUCCESS | FAILED | BLOCKED | EXPIRED
+
+  /// Phone number the OTP was sent to (masked on read)
+  phone           String?
+
+  /// Reason for FAILED/BLOCKED
+  failureReason   String?
+
+  /// Request metadata for audit
+  ipAddress       String?
+  userAgent       String?
+  platform        String?
+
+  isRooted        Boolean? 
+  isEmulator      Boolean?
+
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, deviceId])
+  @@map("verification_logs")
+}
+
+// ─── Phone Change Log ─────────────────────────────────────────────────────────
+// Records the one-time phone number change per user.
+
+model PhoneChangeLog {
+  id            String   @id @default(cuid()) @map("_id")
+  userId        String
+
+  previousPhone String
+  newPhone      String
+
+  /// IP address at time of change
+  ipAddress     String?
+  platform      String?
+
+  /// Verification that proved ownership of new number
+  verifiedViaOtp Boolean @default(false)
+
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("phone_change_logs")
 }
 
 model Category {

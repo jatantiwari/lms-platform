@@ -11,7 +11,10 @@ import hlsRouter from './hls.route';
 import instructorRouter from './instructor.route';
 import lectureRatingRouter from './lectureRating.route';
 import seoRegistrationRouter from './seoRegistration.route';
+import deviceBindingRouter from './deviceBinding.route';
+import deviceTrustRouter from './deviceTrust.route';
 import { authenticate } from '../middleware/authenticate';
+import { requireDeviceTrust } from '../middleware/requireDeviceTrust';
 import { getLecture } from '../controllers/lecture.controller';
 
 const router = Router();
@@ -28,8 +31,11 @@ router.use('/hls', hlsRouter);
 router.use('/instructor', instructorRouter);
 router.use('/lecture-ratings', lectureRatingRouter);
 router.use('/seo-registration', seoRegistrationRouter);
+router.use('/auth/device-binding', deviceBindingRouter);
+router.use('/auth/device-trust', deviceTrustRouter);
 
 // Top-level lecture fetch used by the learn page (GET /lectures/:lectureId)
-router.get('/lectures/:lectureId', authenticate, getLecture);
+// requireDeviceTrust validates X-Device-ID header if present (mobile clients)
+router.get('/lectures/:lectureId', authenticate, requireDeviceTrust, getLecture);
 
 export default router;

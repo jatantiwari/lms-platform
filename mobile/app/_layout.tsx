@@ -2,14 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Notifications from 'expo-notifications';
 import * as ScreenCapture from 'expo-screen-capture';
 import Toast from 'react-native-toast-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '../src/store/authStore';
-import { registerForPushNotifications, setupNotificationListeners } from '../src/lib/notifications';
+import { useDeviceTrustStore } from '../src/store/deviceTrustStore';
+import { registerForPushNotifications, setupNotificationListeners, addNotificationTapListener } from '../src/lib/notifications';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60 * 1000 } },
@@ -21,8 +21,9 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
   const { user, isHydrated, hydrate } = useAuthStore();
+  const hydrateDeviceTrust = useDeviceTrustStore((s) => s.hydrate);
 
-  useEffect(() => { hydrate(); }, []);
+  useEffect(() => { hydrate(); hydrateDeviceTrust(); }, []);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -63,17 +64,16 @@ export default function RootLayout() {
     notifListener.current = setupNotificationListeners();
 
     // Handle notification taps when app was backgrounded
-    const tapSub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
+    const removeTapListener = addNotificationTapListener((data) => {
       if (data?.courseId) {
-        router.push(`/course/${data.courseId}`);
+        router.push(`/course/${data.courseId as string}`);
       }
     });
 
     return () => {
       ScreenCapture.allowScreenCaptureAsync();
       notifListener.current?.();
-      tapSub.remove();
+      removeTapListener();
     };
   }, []);
 
@@ -92,10 +92,6 @@ export default function RootLayout() {
           <Stack.Screen
             name="learn/[courseId]"
             options={{ headerShown: true, title: 'Learn', headerBackTitle: 'Back' }}
-          />
-          <Stack.Screen
-            name="notifications"
-            options={{ headerShown: true, title: 'Notifications', headerBackTitle: 'Back' }}
           />
         </Stack>
         </RouteGuard>

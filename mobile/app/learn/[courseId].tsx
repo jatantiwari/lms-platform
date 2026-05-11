@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  FlatList, ActivityIndicator, Alert,
+  View, Text, StyleSheet, TouchableOpacity,
+  FlatList, ActivityIndicator,
 } from 'react-native';
-import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
@@ -22,8 +22,6 @@ export default function LearnScreen() {
   const { courseId: courseSlug, lectureId: initialLectureId } = useLocalSearchParams<{ courseId: string; lectureId?: string }>();
   const router = useRouter();
   const qc = useQueryClient();
-  const videoRef = useRef<Video>(null);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const watchedSecondsRef = useRef(0);
   const didAutoSelectRef = useRef(false);
   // Prevent duplicate auto-complete API calls while position stays ≥90%
@@ -34,6 +32,10 @@ export default function LearnScreen() {
   const [activeLecture, setActiveLecture] = useState<Lecture | null>(null);
   const [isLoadingLecture, setIsLoadingLecture] = useState(false);
   const [myRating, setMyRating] = useState(0);
+
+  const player = useVideoPlayer(null, (p) => {
+    p.loop = false;
+  });
 
   const { data: course, isLoading } = useQuery({
     queryKey: ['course-learn', courseSlug],
@@ -97,6 +99,49 @@ export default function LearnScreen() {
     }
   }, []);
 
+  // Update the video player source whenever the active lecture changes
+  React.useEffect(() => {
+    if (activeLecture?.videoUrl) {
+      player.replace({ uri: activeLecture.videoUrl });
+      player.play();
+    }
+  }, [activeLecture?.id]);
+
+  // Track progress and auto-complete via expo-video events
+  React.useEffect(() => {
+    const timeSub = player.addListener('timeUpdate', ({ currentTime }) => {
+      const seconds = Math.floor(currentTime);
+      watchedSecondsRef.current = seconds;
+
+      // Throttled progress save every 30 s
+      if (activeLecture && seconds - lastProgressSaveRef.current >= 30) {
+        lastProgressSaveRef.current = seconds;
+        progressApi.update(activeLecture.id, { watchedSeconds: seconds }).catch(() => {});
+      }
+
+      // Auto-complete at 90%
+      const duration = player.duration;
+      if (duration && duration > 0 && currentTime / duration >= 0.9 &&
+          !isCompleted && !hasAutoCompletedRef.current && activeLecture) {
+        hasAutoCompletedRef.current = true;
+        completeMutation.mutate();
+      }
+    });
+
+    const endSub = player.addListener('playToEnd', () => {
+      if (!activeLecture) return;
+      const currentIdx = allLectures.findIndex((l) => l.id === activeLecture.id);
+      if (currentIdx >= 0 && currentIdx < allLectures.length - 1) {
+        selectLecture(allLectures[currentIdx + 1].id);
+      }
+    });
+
+    return () => {
+      timeSub.remove();
+      endSub.remove();
+    };
+  }, [player, activeLecture, isCompleted, allLectures, selectLecture]);
+
   // Auto-select the first incomplete lecture (or URL param) once course + progress are ready
   React.useEffect(() => {
     if (!course || !progress || didAutoSelectRef.current) return;
@@ -109,34 +154,6 @@ export default function LearnScreen() {
     const target = flat.find((l) => !progress.completedLectures?.includes(l.id)) ?? flat[0];
     if (target) selectLecture(target.id);
   }, [course, progress]);
-
-  const handlePlaybackStatus = useCallback((status: AVPlaybackStatus) => {
-    if (!status.isLoaded) return;
-    if (status.isPlaying) {
-      const seconds = Math.floor((status.positionMillis ?? 0) / 1000);
-      watchedSecondsRef.current = seconds;
-      // Save watchedSeconds to backend at most once every 30 seconds
-      if (activeLecture && seconds - lastProgressSaveRef.current >= 30) {
-        lastProgressSaveRef.current = seconds;
-        progressApi.update(activeLecture.id, { watchedSeconds: seconds }).catch(() => {});
-      }
-    }
-    // Auto-complete when 90% watched — fire only once per lecture
-    if (status.durationMillis && status.positionMillis) {
-      const pct = status.positionMillis / status.durationMillis;
-      if (pct >= 0.9 && !isCompleted && !hasAutoCompletedRef.current && activeLecture) {
-        hasAutoCompletedRef.current = true;
-        completeMutation.mutate();
-      }
-    }
-    // Auto-advance to next lecture when current video ends
-    if (status.didJustFinish && activeLecture) {
-      const currentIdx = allLectures.findIndex((l) => l.id === activeLecture.id);
-      if (currentIdx >= 0 && currentIdx < allLectures.length - 1) {
-        selectLecture(allLectures[currentIdx + 1].id);
-      }
-    }
-  }, [isCompleted, activeLecture, completeMutation, allLectures, selectLecture]);
 
   const handleSelectLecture = (lec: Lecture) => selectLecture(lec.id);
 
@@ -160,15 +177,11 @@ export default function LearnScreen() {
             <ActivityIndicator size="large" color={Colors.primary} />
           </View>
         ) : activeLecture?.videoUrl ? (
-          <Video
-            key={activeLecture.id}
-            ref={videoRef}
-            source={{ uri: activeLecture.videoUrl }}
+          <VideoView
+            player={player}
             style={styles.video}
-            useNativeControls
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay
-            onPlaybackStatusUpdate={handlePlaybackStatus}
+            nativeControls
+            contentFit="contain"
           />
         ) : (
           <View style={[styles.video, styles.videoPlaceholder]}>

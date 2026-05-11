@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { enrollmentApi } from '../../src/lib/api';
 import { Ionicons } from '@expo/vector-icons';
+import { DeviceTrustGate } from '../../src/components/DeviceVerification';
 import { Colors, Spacing } from '../../src/constants/theme';
 import { Enrollment } from '../../src/types';
 
@@ -24,40 +25,43 @@ export default function MyLearningScreen() {
   const renderItem = useCallback(({ item }: { item: Enrollment }) => {
     const pct = item.completionPercentage ?? 0;
     return (
-      <TouchableOpacity style={styles.card} onPress={() => router.push(`/learn/${item.courseId}`)}>
-        {item.course?.thumbnail ? (
-          <Image source={{ uri: item.course.thumbnail }} style={styles.thumbnail} />
-        ) : (
-          <View style={[styles.thumbnail, styles.thumbFallback]}>
-            <Ionicons name="book-outline" size={28} color={Colors.primary} />
-          </View>
-        )}
-        <View style={styles.info}>
-          <Text style={styles.title} numberOfLines={2}>{item.course?.title ?? 'Untitled'}</Text>
-          {item.course?.instructor?.name && (
-            <Text style={styles.instructor}>{item.course.instructor.name}</Text>
-          )}
-          <View style={styles.progressRow}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${pct}%` as unknown as number }]} />
-            </View>
-            <Text style={styles.pct}>{pct}%</Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.continueBtn, pct === 100 && styles.continueBtnDone]}
-            onPress={() => router.push(`/learn/${item.courseId}`)}
-          >
-            <View style={styles.continueBtnInner}>
-              <Ionicons
-                name={pct === 100 ? 'checkmark-circle-outline' : 'play-circle-outline'}
-                size={14}
-                color={Colors.white}
-              />
-              <Text style={styles.continueBtnText}>{pct === 100 ? ' Review' : ' Continue'}</Text>
+      <DeviceTrustGate onAccess={() => router.push(`/learn/${item.courseId}`)}>
+        {({ onPress, isChecking }) => (
+          <TouchableOpacity style={styles.card} onPress={onPress} disabled={isChecking}>
+            {item.course?.thumbnail ? (
+              <Image source={{ uri: item.course.thumbnail }} style={styles.thumbnail} />
+            ) : (
+              <View style={[styles.thumbnail, styles.thumbFallback]}>
+                <Ionicons name="book-outline" size={28} color={Colors.primary} />
+              </View>
+            )}
+            <View style={styles.info}>
+              <Text style={styles.title} numberOfLines={2}>{item.course?.title ?? 'Untitled'}</Text>
+              {item.course?.instructor?.name && (
+                <Text style={styles.instructor}>{item.course.instructor.name}</Text>
+              )}
+              <View style={styles.progressRow}>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${pct}%` as unknown as number }]} />
+                </View>
+                <Text style={styles.pct}>{pct}%</Text>
+              </View>
+              <View
+                style={[styles.continueBtn, pct === 100 && styles.continueBtnDone]}
+              >
+                <View style={styles.continueBtnInner}>
+                  <Ionicons
+                    name={pct === 100 ? 'checkmark-circle-outline' : 'play-circle-outline'}
+                    size={14}
+                    color={Colors.white}
+                  />
+                  <Text style={styles.continueBtnText}>{pct === 100 ? ' Review' : ' Continue'}</Text>
+                </View>
+              </View>
             </View>
           </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
+        )}
+      </DeviceTrustGate>
     );
   }, [router]);
 

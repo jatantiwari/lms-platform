@@ -44,6 +44,9 @@ const envSchema = z.object({
   // e.g. "ADIBoostOTP". Leave empty to use AUTOGEN (no SMS auto-read on Android).
   SMS_RETRIEVER_TEMPLATE: z.string().optional().default(''),
 
+  // Device binding HMAC secret (min 32 chars)
+  DEVICE_BINDING_SECRET: z.string().min(16).optional().default('change-me-device-binding-secret-32'),
+
   // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
 });

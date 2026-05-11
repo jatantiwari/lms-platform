@@ -24,6 +24,16 @@ api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const token = await getAccessToken();
     if (token) config.headers.Authorization = `Bearer ${token}`;
+
+    // Attach device ID header for device trust validation on protected endpoints
+    const deviceState = await SecureStore.getItemAsync('deviceTrustState');
+    if (deviceState) {
+      try {
+        const parsed = JSON.parse(deviceState) as { deviceId?: string };
+        if (parsed.deviceId) config.headers['X-Device-ID'] = parsed.deviceId;
+      } catch { /* ignore */ }
+    }
+
     return config;
   },
   (error) => Promise.reject(error),
@@ -150,4 +160,66 @@ export const userApi = {
     api.put('/users/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   changePassword: (currentPassword: string, newPassword: string) =>
     api.put('/users/change-password', { currentPassword, newPassword }),
+};
+
+// ─── Device Trust API ─────────────────────────────────────────────────────────
+
+export interface DeviceTrustCheckParams {
+  deviceId: string;
+  fingerprintHash: string;
+}
+
+export interface SendDeviceTrustOtpPayload {
+  deviceId: string;
+  fingerprintHash: string;
+  appVersion?: string;
+  simPhoneNumber?: string;
+  simCarrier?: string;
+  simSlot?: number;
+  platform?: string;
+  isRooted?: boolean;
+  isEmulator?: boolean;
+}
+
+export interface VerifyDeviceTrustOtpPayload {
+  otp: string;
+  deviceId: string;
+  fingerprintHash: string;
+  appVersion?: string;
+  simPhoneNumber?: string;
+  simCarrier?: string;
+  simSlot?: number;
+  isRooted?: boolean;
+  isEmulator?: boolean;
+}
+
+export const deviceTrustApi = {
+  /**
+   * Check if current device is trusted for course access.
+   * Returns { isTrusted, requiresVerification, knownDevice, deviceId }
+   */
+  check: (params: DeviceTrustCheckParams) =>
+    api.get('/auth/device-trust/check', { params }),
+
+  /**
+   * Send OTP to enrolled phone to start device verification.
+   * Validates SIM phone number against enrolled phone if provided.
+   */
+  sendOtp: (payload: SendDeviceTrustOtpPayload) =>
+    api.post('/auth/device-trust/send-otp', payload),
+
+  /**
+   * Verify OTP and mark device as trusted.
+   * Returns { success, isTrusted, deviceBindingId }
+   */
+  verifyOtp: (payload: VerifyDeviceTrustOtpPayload) =>
+    api.post('/auth/device-trust/verify-otp', payload),
+
+  /**
+   * One-time phone number update.
+   * Phase 1: { newPhone } → sends OTP to new number
+   * Phase 2: { newPhone, otp } → verifies + applies change, forces device re-verification
+   */
+  updatePhone: (payload: { newPhone: string; otp?: string }) =>
+    api.post('/auth/device-trust/phone-update', payload),
 };

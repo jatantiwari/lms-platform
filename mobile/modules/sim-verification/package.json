@@ -1,0 +1,26 @@
+{
+  "name": "sim-verification",
+  "version": "1.0.0",
+  "description": "Expo local module for SIM-based OTP verification, device fingerprinting, and security checks.",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "prepare": "expo-module prepare"
+  },
+  "keywords": ["expo", "expo-module", "sim", "otp", "sms-retriever"],
+  "peerDependencies": {
+    "expo": "*"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "expo-modules-core": "^2.0.0"
+  },
+  "expo": {
+    "fyi": {
+      "slug": "creating-a-module"
+    }
+  }
+}
