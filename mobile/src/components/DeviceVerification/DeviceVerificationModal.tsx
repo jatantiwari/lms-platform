@@ -228,9 +228,9 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
         <View style={styles.simSection}>
           <Text style={styles.sectionLabel}>Select SIM to verify with:</Text>
           <SimSelector
-            simCards={simCards}
-            selectedSlot={selectedSimSlot}
-            onSelect={setSelectedSimSlot}
+            sims={simCards}
+            selectedSimSlot={selectedSimSlot}
+            onSelect={(sim) => setSelectedSimSlot(sim.slotIndex)}
           />
         </View>
       )}

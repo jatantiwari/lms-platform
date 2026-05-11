@@ -43,7 +43,7 @@ router.post('/verify-otp', verifyDeviceTrustOtp);
  */
 router.post(
   '/phone-update',
-  authorize(['STUDENT', 'INSTRUCTOR', 'ADMIN']),
+  authorize('STUDENT', 'INSTRUCTOR', 'ADMIN'),
   updatePhone,
 );
 

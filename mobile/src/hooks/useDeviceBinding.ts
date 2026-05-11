@@ -24,7 +24,7 @@ import * as ExpoDevice from 'expo-device';
 import * as ExpoConstants from 'expo-constants';
 import { getDeviceFingerprint, getSecurityStatus, getSimCards } from '../lib/simVerification';
 import type { DeviceFingerprint, SecurityStatus } from '../lib/simVerification';
-import api from './api';
+import api from '../lib/api';
 
 export interface DeviceInfo {
   fingerprint: DeviceFingerprint | null;

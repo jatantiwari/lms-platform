@@ -18,7 +18,7 @@ export interface SimPermissionsState {
   phoneNumbers: SimPermissionStatus;
 }
 
-const toStatus = (result: PermissionsAndroid.PermissionStatus): SimPermissionStatus => {
+const toStatus = (result: string): SimPermissionStatus => {
   switch (result) {
     case PermissionsAndroid.RESULTS.GRANTED:
       return 'granted';

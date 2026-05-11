@@ -50,7 +50,7 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-  const notifListener = useRef<() => void>();
+  const notifListener = useRef<(() => void) | null>(null);
   const router = useRouter();
 
   useEffect(() => {

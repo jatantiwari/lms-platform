@@ -62,8 +62,8 @@ export function validateDevicePayload(
   return {
     valid: true,
     data: {
-      deviceId: sanitize(deviceId),
-      fingerprintHash: sanitize(fingerprintHash),
+      deviceId: sanitize(deviceId) as string,
+      fingerprintHash: sanitize(fingerprintHash) as string,
       buildFingerprint: sanitize(payload.buildFingerprint),
       model: sanitize(payload.model),
       manufacturer: sanitize(payload.manufacturer),

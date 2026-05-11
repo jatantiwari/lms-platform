@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { deviceBindingService } from '../services/deviceBinding.service';
 import { deviceBindingSchema } from '../validations/deviceBinding.validation';
-import { BadRequestError, UnauthorizedError } from '../utils/AppError';
+import { ValidationError, UnauthorizedError } from '../utils/AppError';
 
 /**
  * POST /auth/device-binding
@@ -25,7 +25,7 @@ export const registerDeviceBinding = async (
 
     const parsed = deviceBindingSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new BadRequestError(parsed.error.errors[0]?.message ?? 'Invalid payload');
+      throw new ValidationError(parsed.error.errors[0]?.message ?? 'Invalid payload');
     }
 
     const result = await deviceBindingService.registerOrValidateDevice(userId, parsed.data);
@@ -93,7 +93,7 @@ export const revokeDevice = async (
 
     const { deviceBindingId } = req.params;
     if (!deviceBindingId || typeof deviceBindingId !== 'string') {
-      throw new BadRequestError('Missing deviceBindingId');
+      throw new ValidationError('Missing deviceBindingId');
     }
 
     await deviceBindingService.revokeDevice(userId, deviceBindingId);
@@ -120,7 +120,7 @@ export const confirmDeviceVerification = async (
 
     const { deviceId } = req.body;
     if (!deviceId || typeof deviceId !== 'string') {
-      throw new BadRequestError('Missing deviceId');
+      throw new ValidationError('Missing deviceId');
     }
 
     await deviceBindingService.markDeviceVerified(userId, deviceId);

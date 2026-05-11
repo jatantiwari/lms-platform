@@ -56,7 +56,6 @@ export default function CourseDetailScreen() {
           'Enrolled! 🎉',
           `You are now enrolled in "${data?.title}"`,
           { courseId: data?.id ?? '' },
-          'enrollment',
         );
         Toast.show({ type: 'success', text1: 'Enrolled successfully!' });
         qc.invalidateQueries({ queryKey: ['enroll-check', data?.id] });

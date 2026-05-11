@@ -106,7 +106,10 @@ export default function VerifyPhoneScreen() {
         try { appHash = await getAppHash(); } catch (_) {}
       }
 
-      await authApi.sendPhoneOtp({ appHash, simSlot: selectedSimSlot ?? undefined });
+      // appHash is not sent as a body param — the backend reads it from env
+      // The simSlot info is only used client-side for SMS Retriever selection
+      void appHash; // used by SMS Retriever on device, not needed by backend
+      await authApi.sendPhoneOtp();
       setOtpSent(true);
       setCooldown(90);
       Toast.show({
@@ -207,12 +210,11 @@ export default function VerifyPhoneScreen() {
         />
 
         <Button
+          title={isVerifying ? 'Verifying…' : 'Verify OTP'}
           onPress={handleVerify}
           disabled={isVerifying || digits.join('').length !== 6}
           style={styles.verifyBtn}
-        >
-          {isVerifying ? 'Verifying…' : 'Verify OTP'}
-        </Button>
+        />
 
         {/* Resend row */}
         <View style={styles.resendRow}>

@@ -22,6 +22,8 @@ if (_notifAvailable) {
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
       }),
     });
   } catch (e) {
@@ -159,8 +161,9 @@ export function addNotificationTapListener(
 
 export async function scheduleDailyReminder(hour = 20, minute = 0): Promise<void> {
   if (!Notifications) return;
-  await Notifications.cancelAllScheduledNotificationsAsync();
-  await Notifications.scheduleNotificationAsync({
+  const notifs = Notifications; // narrow away null for TypeScript
+  await notifs.cancelAllScheduledNotificationsAsync();
+  await notifs.scheduleNotificationAsync({
     content: {
       title: '📚 Time to learn!',
       body: 'Keep your streak going — continue where you left off.',
@@ -168,10 +171,10 @@ export async function scheduleDailyReminder(hour = 20, minute = 0): Promise<void
       data: { type: 'general' },
     },
     trigger: {
+      type: notifs.SchedulableTriggerInputTypes.DAILY,
       hour,
       minute,
-      repeats: true,
-    } as import('expo-notifications').CalendarNotificationTrigger,
+    },
   });
 }
 
