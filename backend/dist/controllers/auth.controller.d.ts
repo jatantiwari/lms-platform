@@ -7,5 +7,7 @@ export declare const forgotPassword: (req: Request, res: Response, next: import(
 export declare const resetPassword: (req: Request, res: Response, next: import("express").NextFunction) => void;
 export declare const getMe: (req: Request, res: Response, next: import("express").NextFunction) => void;
 export declare const verifyEmail: (req: Request, res: Response, next: import("express").NextFunction) => void;
+export declare const sendPhoneOtp: (req: Request, res: Response, next: import("express").NextFunction) => void;
+export declare const verifyPhoneOtp: (req: Request, res: Response, next: import("express").NextFunction) => void;
 export declare const resendVerification: (req: Request, res: Response, next: import("express").NextFunction) => void;
 //# sourceMappingURL=auth.controller.d.ts.map

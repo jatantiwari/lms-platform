@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
@@ -6,6 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
+import OtpVerify from 'react-native-otp-verify';
 import { useAuthStore } from '../../src/store/authStore';
 import { authApi } from '../../src/lib/api';
 import { Button } from '../../src/components/ui/Button';
@@ -19,11 +20,49 @@ export default function VerifyPhoneScreen() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [autoReadActive, setAutoReadActive] = useState(false);
   const inputs = useRef<(TextInput | null)[]>([]);
+  const autoSubmitRef = useRef(false);
+
+  // ── SMS auto-read (Android only) ──────────────────────────────────────────
+  const startSmsListener = useCallback(() => {
+    if (Platform.OS !== 'android') return;
+    try {
+      OtpVerify.getOtp()
+        .then(() => {
+          setAutoReadActive(true);
+          OtpVerify.addListener((message: string) => {
+            // Extract 6-digit OTP from the incoming SMS body
+            const match = /\b(\d{6})\b/.exec(message);
+            if (match) {
+              const otp = match[1].split('');
+              setDigits(otp);
+              setAutoReadActive(false);
+              OtpVerify.removeListener();
+              // Auto-submit after filling digits
+              autoSubmitRef.current = true;
+            }
+          });
+        })
+        .catch(() => {
+          // SMS Retriever not available — user will type manually
+          setAutoReadActive(false);
+        });
+    } catch {
+      setAutoReadActive(false);
+    }
+  }, []);
+
+  const stopSmsListener = useCallback(() => {
+    if (Platform.OS !== 'android') return;
+    try { OtpVerify.removeListener(); } catch { /* ignore */ }
+    setAutoReadActive(false);
+  }, []);
 
   useEffect(() => {
     // Auto-send OTP as soon as the screen mounts
     sendOtp();
+    return () => { stopSmsListener(); };
   }, []);
 
   useEffect(() => {
@@ -32,13 +71,24 @@ export default function VerifyPhoneScreen() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
+  // Auto-submit when digits are filled by SMS auto-read
+  useEffect(() => {
+    if (autoSubmitRef.current && digits.every((d) => d !== '')) {
+      autoSubmitRef.current = false;
+      handleVerify(digits.join(''));
+    }
+  }, [digits]);
+
   const sendOtp = async () => {
     if (cooldown > 0 || isSending) return;
     setIsSending(true);
+    stopSmsListener();
     try {
       await authApi.sendPhoneOtp();
       setOtpSent(true);
       setCooldown(90);
+      // Start listening for the incoming SMS right after sending
+      startSmsListener();
       Toast.show({ type: 'success', text1: 'OTP Sent!', text2: `Check SMS on ${user?.phone ?? 'your number'}` });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
@@ -63,8 +113,8 @@ export default function VerifyPhoneScreen() {
     }
   };
 
-  const handleVerify = async () => {
-    const otp = digits.join('');
+  const handleVerify = async (otpOverride?: string) => {
+    const otp = otpOverride ?? digits.join('');
     if (otp.length !== 6) {
       Toast.show({ type: 'error', text1: 'Enter all 6 digits' });
       return;
@@ -109,6 +159,14 @@ export default function VerifyPhoneScreen() {
           </View>
         )}
 
+        {/* Android auto-read indicator */}
+        {autoReadActive && (
+          <View style={styles.sendingRow}>
+            <ActivityIndicator size="small" color={Colors.primary} />
+            <Text style={styles.sendingText}>Waiting to auto-read SMS…</Text>
+          </View>
+        )}
+
         {/* OTP input boxes */}
         <View style={styles.otpRow}>
           {digits.map((d, i) => (
@@ -123,12 +181,13 @@ export default function VerifyPhoneScreen() {
               maxLength={1}
               selectTextOnFocus
               editable={otpSent && !isVerifying}
+              textContentType="oneTimeCode"
             />
           ))}
         </View>
 
         <Button
-          onPress={handleVerify}
+          onPress={() => handleVerify()}
           disabled={isVerifying || digits.join('').length !== 6}
           style={styles.verifyBtn}
         >

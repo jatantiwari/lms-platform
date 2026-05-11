@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.optionalAuthenticate = exports.authenticate = void 0;
+exports.strictOptionalAuthenticate = exports.optionalAuthenticate = exports.authenticate = void 0;
 const jwt_1 = require("../utils/jwt");
 const AppError_1 = require("../utils/AppError");
 /**
@@ -40,4 +40,35 @@ const optionalAuthenticate = (req, _res, next) => {
     next();
 };
 exports.optionalAuthenticate = optionalAuthenticate;
+/**
+ * Strict-optional authenticate — like optionalAuthenticate but throws 401 when
+ * a token IS present but invalid/expired. This lets clients (mobile, web) trigger
+ * their token-refresh flow rather than silently being treated as unauthenticated,
+ * which would deny them access to paid content they are enrolled in.
+ *
+ * Also accepts a JWT via the `?token=` query parameter as a fallback for native
+ * video players (e.g. expo-av on mobile) that cannot set custom HTTP headers.
+ * The Authorization header is checked first; ?token= is only used when no header
+ * is present.
+ *
+ * Use on routes that are public for genuinely unauthenticated users (no token at all)
+ * but require valid auth for users who hold a token (e.g. HLS streaming).
+ */
+const strictOptionalAuthenticate = (req, _res, next) => {
+    const authHeader = req.headers.authorization;
+    // Prefer Authorization header; fall back to ?token= query param (for native players)
+    const rawToken = authHeader?.startsWith('Bearer ')
+        ? authHeader.split(' ')[1]
+        : req.query.token;
+    if (rawToken) {
+        try {
+            req.user = (0, jwt_1.verifyAccessToken)(rawToken);
+        }
+        catch {
+            throw new AppError_1.UnauthorizedError('Invalid or expired access token');
+        }
+    }
+    next();
+};
+exports.strictOptionalAuthenticate = strictOptionalAuthenticate;
 //# sourceMappingURL=authenticate.js.map

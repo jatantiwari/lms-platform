@@ -40,6 +40,9 @@ const envSchema = z.object({
 
   // 2Factor SMS OTP (https://2factor.in)
   TWOFACTOR_API_KEY: z.string().optional().default(''),
+  // Optional: custom 2Factor template name that includes the Android app hash
+  // e.g. "ADIBoostOTP". Leave empty to use AUTOGEN (no SMS auto-read on Android).
+  SMS_RETRIEVER_TEMPLATE: z.string().optional().default(''),
 
   // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),

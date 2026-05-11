@@ -9,9 +9,16 @@ import logger from './config/logger';
 const PORT = env.PORT;
 
 async function bootstrap(): Promise<void> {
-  // Verify database connectivity
-  await prisma.$connect();
-  logger.info('✅ PostgreSQL connected via Prisma');
+  // Verify database connectivity with a real ping — prisma.$connect() is lazy for MongoDB
+  try {
+    await prisma.$connect();
+    await prisma.$runCommandRaw({ ping: 1 });
+    logger.info('✅ MongoDB connected via Prisma');
+  } catch (err) {
+    logger.error('❌ Database connection failed. Server will not start.');
+    logger.error(err);
+    process.exit(1);
+  }
 
   const server = app.listen(PORT, () => {
     logger.info(`🚀 Server running on http://localhost:${PORT} [${env.NODE_ENV}]`);

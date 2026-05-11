@@ -28,9 +28,15 @@ const envSchema = zod_1.z.object({
     AWS_REGION: zod_1.z.string().default('ap-south-1'),
     AWS_S3_BUCKET_NAME: zod_1.z.string().min(1),
     AWS_S3_ENDPOINT: zod_1.z.string().optional(), // for Cloudflare R2
-    // Razorpay (optional — not used when dummy payment mode is active)
+    // Razorpay (required for SEO registration payment flow)
     RAZORPAY_KEY_ID: zod_1.z.string().optional().default(''),
     RAZORPAY_KEY_SECRET: zod_1.z.string().optional().default(''),
+    // SEO marketing site
+    SEO_SITE_URL: zod_1.z.string().url().optional().default('http://localhost:3001'),
+    // The instructor user ID that all SEO registrations are assigned to
+    DEFAULT_INSTRUCTOR_ID: zod_1.z.string().min(1).optional().default(''),
+    // 2Factor SMS OTP (https://2factor.in)
+    TWOFACTOR_API_KEY: zod_1.z.string().optional().default(''),
     // Email (AWS SES)
     EMAIL_FROM: zod_1.z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
 });

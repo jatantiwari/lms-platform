@@ -16,5 +16,8 @@ router.post('/logout', authenticate_1.authenticate, auth_controller_1.logout);
 router.get('/me', authenticate_1.authenticate, auth_controller_1.getMe);
 router.post('/verify-email', authenticate_1.authenticate, (0, validate_1.validate)(auth_validation_1.verifyEmailSchema), auth_controller_1.verifyEmail);
 router.post('/resend-verification', authenticate_1.authenticate, auth_controller_1.resendVerification);
+// Phone (SIM) verification
+router.post('/send-phone-otp', authenticate_1.authenticate, auth_controller_1.sendPhoneOtp);
+router.post('/verify-phone-otp', authenticate_1.authenticate, (0, validate_1.validate)(auth_validation_1.verifyPhoneOtpSchema), auth_controller_1.verifyPhoneOtp);
 exports.default = router;
 //# sourceMappingURL=auth.route.js.map

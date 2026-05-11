@@ -15,6 +15,7 @@ const dashboard_route_1 = __importDefault(require("./dashboard.route"));
 const hls_route_1 = __importDefault(require("./hls.route"));
 const instructor_route_1 = __importDefault(require("./instructor.route"));
 const lectureRating_route_1 = __importDefault(require("./lectureRating.route"));
+const seoRegistration_route_1 = __importDefault(require("./seoRegistration.route"));
 const authenticate_1 = require("../middleware/authenticate");
 const lecture_controller_1 = require("../controllers/lecture.controller");
 const router = (0, express_1.Router)();
@@ -29,6 +30,7 @@ router.use('/dashboard', dashboard_route_1.default);
 router.use('/hls', hls_route_1.default);
 router.use('/instructor', instructor_route_1.default);
 router.use('/lecture-ratings', lectureRating_route_1.default);
+router.use('/seo-registration', seoRegistration_route_1.default);
 // Top-level lecture fetch used by the learn page (GET /lectures/:lectureId)
 router.get('/lectures/:lectureId', authenticate_1.authenticate, lecture_controller_1.getLecture);
 exports.default = router;

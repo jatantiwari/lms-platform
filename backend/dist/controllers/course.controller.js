@@ -207,12 +207,12 @@ exports.getCourseById = (0, catchAsync_1.catchAsync)(async (req, res) => {
     if (!isOwner) {
         // Allow enrolled students to access their course content
         if (!userId)
-            throw new AppError_1.NotFoundError('Course');
+            throw new AppError_1.UnauthorizedError('You must be logged in to access this course');
         const enrollment = await prisma_1.default.enrollment.findUnique({
             where: { userId_courseId: { userId, courseId: course.id } },
         });
         if (!enrollment)
-            throw new AppError_1.NotFoundError('Course');
+            throw new AppError_1.ForbiddenError('You must be enrolled in this course to access it');
     }
     // Sign lecture URLs — owners get all (including draft), students only get published
     const sectionsWithUrls = await Promise.all(course.sections.map(async (section) => ({

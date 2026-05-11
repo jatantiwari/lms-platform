@@ -71,6 +71,13 @@ export declare const verifyEmailSchema: z.ZodObject<{
 }, {
     code: string;
 }>;
+export declare const verifyPhoneOtpSchema: z.ZodObject<{
+    otp: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    otp: string;
+}, {
+    otp: string;
+}>;
 export declare const updateProfileSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     bio: z.ZodOptional<z.ZodString>;

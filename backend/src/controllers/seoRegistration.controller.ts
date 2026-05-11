@@ -80,16 +80,26 @@ export const seoRegister = catchAsync(async (req: Request, res: Response) => {
   const existing = await prisma.user.findUnique({ where: { email: emailId } });
   if (existing) throw new ConflictError('An account with this email already exists. Please login.');
 
-  // Resolve instructor
-  const instructorId = env.DEFAULT_INSTRUCTOR_ID;
-  if (!instructorId) throw new AppError('Platform configuration error: instructor not set', 500);
+  // Resolve instructor — prefer configured ID, fall back to first INSTRUCTOR in DB
+  let instructor: { id: string; name: string; email: string; role: string } | null = null;
 
-  const instructor = await prisma.user.findUnique({
-    where: { id: instructorId },
-    select: { id: true, name: true, email: true, role: true },
-  });
-  if (!instructor || instructor.role !== 'INSTRUCTOR') {
-    throw new AppError('Platform configuration error: instructor not found', 500);
+  const configuredId = env.DEFAULT_INSTRUCTOR_ID;
+  if (configuredId) {
+    instructor = await prisma.user.findFirst({
+      where: { id: configuredId, role: 'INSTRUCTOR' },
+      select: { id: true, name: true, email: true, role: true },
+    });
+  }
+
+  if (!instructor) {
+    instructor = await prisma.user.findFirst({
+      where: { role: 'INSTRUCTOR' },
+      select: { id: true, name: true, email: true, role: true },
+    });
+  }
+
+  if (!instructor) {
+    throw new AppError('Platform configuration error: no instructor account found in database', 500);
   }
 
   // Generate credentials

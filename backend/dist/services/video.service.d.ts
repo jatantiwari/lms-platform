@@ -6,7 +6,7 @@
  * hlsKey format: "hls/{courseId}/{lectureId}"
  * The lectureId is extracted to build the proxy URL.
  */
-export declare function getHLSStreamUrl(hlsKey: string): Promise<string>;
+export declare function getHLSStreamUrl(hlsKey: string, token?: string): Promise<string>;
 /**
  * Result from the HLS conversion process.
  */

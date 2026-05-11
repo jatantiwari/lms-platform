@@ -22,7 +22,7 @@ router.get('/', authenticate_2.optionalAuthenticate, course_controller_1.getCour
 // (Express matches routes in registration order; /my would otherwise match /:slug)
 router.get('/my', authenticate_1.authenticate, (0, authorize_1.authorize)('INSTRUCTOR', 'ADMIN'), course_controller_1.getMyCourses);
 router.get('/instructor/my-courses', authenticate_1.authenticate, (0, authorize_1.authorize)('INSTRUCTOR', 'ADMIN'), course_controller_1.getMyCourses);
-router.get('/id/:id', authenticate_2.optionalAuthenticate, course_controller_1.getCourseById);
+router.get('/id/:id', authenticate_1.authenticate, course_controller_1.getCourseById);
 router.get('/admin/all', authenticate_1.authenticate, (0, authorize_1.authorize)('ADMIN'), course_controller_1.getAllCourses);
 // ── Wildcard slug (must be last among GET routes) ─────────────────────────────
 router.get('/:slug', authenticate_2.optionalAuthenticate, course_controller_1.getCourseBySlug);

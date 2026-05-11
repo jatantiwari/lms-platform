@@ -156,9 +156,12 @@ exports.getLecture = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const lecture = await assertEnrolledOrOwner(lectureId, req.user.userId, req.user.role);
     // If the lecture has a stored HLS key, generate a fresh pre-signed stream URL.
     // This ensures the URL is always valid regardless of when it was originally created.
+    // Pass the raw token so native video players (expo-av) that can't set headers get
+    // a ?token= query param embedded in the URL for HLS proxy authentication.
     let streamUrl = lecture.videoUrl ?? null;
     if (lecture.hlsKey) {
-        streamUrl = await (0, video_service_1.getHLSStreamUrl)(lecture.hlsKey);
+        const rawToken = req.headers.authorization?.split(' ')[1];
+        streamUrl = await (0, video_service_1.getHLSStreamUrl)(lecture.hlsKey, rawToken);
     }
     // Re-sign attachment resources so their download URLs never expire.
     const signedResources = await signResources(lecture.resources);

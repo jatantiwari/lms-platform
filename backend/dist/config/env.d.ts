@@ -13,6 +13,9 @@ export declare const env: {
     AWS_S3_BUCKET_NAME: string;
     RAZORPAY_KEY_ID: string;
     RAZORPAY_KEY_SECRET: string;
+    SEO_SITE_URL: string;
+    DEFAULT_INSTRUCTOR_ID: string;
+    TWOFACTOR_API_KEY: string;
     EMAIL_FROM: string;
     AWS_S3_ENDPOINT?: string | undefined;
 };

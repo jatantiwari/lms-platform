@@ -67,7 +67,7 @@ exports.getCourseProgress = (0, catchAsync_1.catchAsync)(async (req, res) => {
         totalLectures,
         completedCount,
         percentage,
-        completedLectureIds: [...completedIds],
+        completedLectures: [...completedIds],
         completedAt: enrollment.completedAt,
     }, 'Course progress');
 });

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resendVerification = exports.verifyEmail = exports.getMe = exports.resetPassword = exports.forgotPassword = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
+exports.resendVerification = exports.verifyPhoneOtp = exports.sendPhoneOtp = exports.verifyEmail = exports.getMe = exports.resetPassword = exports.forgotPassword = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
 const catchAsync_1 = require("../utils/catchAsync");
 const response_1 = require("../utils/response");
 const AppError_1 = require("../utils/AppError");
@@ -11,6 +11,7 @@ const password_1 = require("../utils/password");
 const jwt_1 = require("../utils/jwt");
 const email_1 = require("../utils/email");
 const s3_service_1 = require("../services/s3.service");
+const env_1 = require("../config/env");
 const prisma_1 = __importDefault(require("../config/prisma"));
 const crypto_1 = __importDefault(require("crypto"));
 // ─── Register ─────────────────────────────────────────────────────────────────
@@ -25,7 +26,7 @@ exports.register = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const verificationCodeExp = new Date(Date.now() + 15 * 60 * 1000);
     const user = await prisma_1.default.user.create({
         data: { name, email, password: hashed, role, phone: phone ?? null, verificationCode, verificationCodeExp },
-        select: { id: true, name: true, email: true, role: true, avatar: true, phone: true, emailVerified: true, instructorApproved: true, createdAt: true },
+        select: { id: true, name: true, email: true, role: true, avatar: true, phone: true, emailVerified: true, phoneVerified: true, instructorApproved: true, createdAt: true },
     });
     // Send verification email (non-blocking)
     void (0, email_1.sendEmail)({
@@ -160,6 +161,7 @@ exports.getMe = (0, catchAsync_1.catchAsync)(async (req, res) => {
             website: true,
             phone: true,
             emailVerified: true,
+            phoneVerified: true,
             instructorApproved: true,
             createdAt: true,
             _count: {
@@ -208,6 +210,65 @@ exports.verifyEmail = (0, catchAsync_1.catchAsync)(async (req, res) => {
         },
     });
     (0, response_1.sendSuccess)(res, updated, 'Email verified successfully');
+});
+// ─── Resend Verification ──────────────────────────────────────────────────────
+// ─── Send Phone OTP ─────────────────────────────────────────────────────────
+exports.sendPhoneOtp = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const userId = req.user.userId;
+    const user = await prisma_1.default.user.findUnique({
+        where: { id: userId },
+        select: { id: true, phone: true, phoneVerified: true },
+    });
+    if (!user)
+        throw new AppError_1.NotFoundError('User');
+    if (user.phoneVerified)
+        throw new AppError_1.AppError('Phone number is already verified', 400);
+    if (!user.phone)
+        throw new AppError_1.AppError('No phone number found. Update your profile first.', 400);
+    if (!env_1.env.TWOFACTOR_API_KEY)
+        throw new AppError_1.AppError('SMS service not configured', 503);
+    // Strip to digits only — 2Factor expects E.164 without + for Indian numbers
+    const phone = user.phone.replace(/\D/g, '').replace(/^91/, '').slice(-10);
+    const url = `https://2factor.in/API/V1/${env_1.env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN`;
+    const tfRes = await fetch(url);
+    const tfData = (await tfRes.json());
+    if (tfData.Status !== 'Success') {
+        throw new AppError_1.AppError(`Failed to send OTP: ${tfData.Details}`, 502);
+    }
+    await prisma_1.default.user.update({
+        where: { id: userId },
+        data: { phoneOtpSession: tfData.Details },
+    });
+    (0, response_1.sendSuccess)(res, {}, 'OTP sent to your registered mobile number');
+});
+// ─── Verify Phone OTP ────────────────────────────────────────────────────────
+exports.verifyPhoneOtp = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const userId = req.user.userId;
+    const { otp } = req.body;
+    const user = await prisma_1.default.user.findUnique({
+        where: { id: userId },
+        select: { id: true, phoneOtpSession: true, phoneVerified: true },
+    });
+    if (!user)
+        throw new AppError_1.NotFoundError('User');
+    if (user.phoneVerified)
+        throw new AppError_1.AppError('Phone number is already verified', 400);
+    if (!user.phoneOtpSession) {
+        throw new AppError_1.AppError('No OTP session found. Please request a new OTP first.', 400);
+    }
+    if (!env_1.env.TWOFACTOR_API_KEY)
+        throw new AppError_1.AppError('SMS service not configured', 503);
+    const url = `https://2factor.in/API/V1/${env_1.env.TWOFACTOR_API_KEY}/SMS/VERIFY/${user.phoneOtpSession}/${otp}`;
+    const tfRes = await fetch(url);
+    const tfData = (await tfRes.json());
+    if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+        throw new AppError_1.AppError('Invalid or expired OTP. Please try again.', 400);
+    }
+    await prisma_1.default.user.update({
+        where: { id: userId },
+        data: { phoneVerified: true, phoneOtpSession: null },
+    });
+    (0, response_1.sendSuccess)(res, {}, 'Phone number verified successfully');
 });
 // ─── Resend Verification ──────────────────────────────────────────────────────
 exports.resendVerification = (0, catchAsync_1.catchAsync)(async (req, res) => {

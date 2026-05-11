@@ -7,6 +7,7 @@ exports.getCourseStudents = exports.checkEnrollment = exports.getMyEnrollments =
 const catchAsync_1 = require("../utils/catchAsync");
 const response_1 = require("../utils/response");
 const AppError_1 = require("../utils/AppError");
+const s3_service_1 = require("../services/s3.service");
 const prisma_1 = __importDefault(require("../config/prisma"));
 // ─── Enroll (already enrolled check) ──────────────────────────────────────────
 exports.getMyEnrollments = (0, catchAsync_1.catchAsync)(async (req, res) => {
@@ -33,20 +34,27 @@ exports.getMyEnrollments = (0, catchAsync_1.catchAsync)(async (req, res) => {
     ]);
     // Attach progress percentage to each enrollment
     const enriched = await Promise.all(enrollments.map(async (enrollment) => {
-        const [allCount, doneCount] = await Promise.all([
-            prisma_1.default.lecture.count({
-                where: { section: { courseId: enrollment.courseId }, isPublished: true },
-            }),
-            prisma_1.default.progress.count({
-                where: {
-                    userId,
-                    completed: true,
-                    lecture: { section: { courseId: enrollment.courseId } },
-                },
-            }),
+        const [[allCount, doneCount], signedThumbnail] = await Promise.all([
+            Promise.all([
+                prisma_1.default.lecture.count({
+                    where: { section: { courseId: enrollment.courseId }, isPublished: true },
+                }),
+                prisma_1.default.progress.count({
+                    where: {
+                        userId,
+                        completed: true,
+                        lecture: { section: { courseId: enrollment.courseId } },
+                    },
+                }),
+            ]),
+            (0, s3_service_1.s3ImageUrl)(enrollment.course.thumbnail),
         ]);
         return {
             ...enrollment,
+            course: {
+                ...enrollment.course,
+                thumbnail: signedThumbnail,
+            },
             progress: {
                 totalLectures: allCount,
                 completedCount: doneCount,

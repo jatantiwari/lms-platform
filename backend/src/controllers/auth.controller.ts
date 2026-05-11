@@ -286,7 +286,10 @@ export const sendPhoneOtp = catchAsync(async (req: Request, res: Response) => {
   // Strip to digits only — 2Factor expects E.164 without + for Indian numbers
   const phone = user.phone.replace(/\D/g, '').replace(/^91/, '').slice(-10);
 
-  const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN`;
+  // If a custom template is configured (required for Android SMS Retriever auto-read),
+  // use it; otherwise fall back to AUTOGEN default template.
+  const templateSegment = env.SMS_RETRIEVER_TEMPLATE ? `/${env.SMS_RETRIEVER_TEMPLATE}` : '';
+  const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN${templateSegment}`;
   const tfRes = await fetch(url);
   const tfData = (await tfRes.json()) as { Status: string; Details: string };
 

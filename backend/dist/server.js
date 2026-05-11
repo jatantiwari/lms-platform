@@ -11,9 +11,17 @@ const prisma_1 = __importDefault(require("./config/prisma"));
 const logger_1 = __importDefault(require("./config/logger"));
 const PORT = env_1.env.PORT;
 async function bootstrap() {
-    // Verify database connectivity
-    await prisma_1.default.$connect();
-    logger_1.default.info('✅ PostgreSQL connected via Prisma');
+    // Verify database connectivity with a real ping — prisma.$connect() is lazy for MongoDB
+    try {
+        await prisma_1.default.$connect();
+        await prisma_1.default.$runCommandRaw({ ping: 1 });
+        logger_1.default.info('✅ MongoDB connected via Prisma');
+    }
+    catch (err) {
+        logger_1.default.error('❌ Database connection failed. Server will not start.');
+        logger_1.default.error(err);
+        process.exit(1);
+    }
     const server = app_1.default.listen(PORT, () => {
         logger_1.default.info(`🚀 Server running on http://localhost:${PORT} [${env_1.env.NODE_ENV}]`);
     });
