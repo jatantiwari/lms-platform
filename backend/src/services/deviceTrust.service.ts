@@ -25,6 +25,13 @@ import crypto from 'crypto';
 import prisma from '../config/prisma';
 import { env } from '../config/env';
 import { isFingerprintMatch, checkAndConsumeNonce, isTimestampFresh } from '../utils/deviceBinding';
+import {
+  generateOtp,
+  sendOtpViaTwoFactor,
+  encodeOtpSession,
+  decodeOtpSession,
+  verifyOtpHash,
+} from '../utils/twoFactor';
 import type {
   SendDeviceTrustOtpInput,
   VerifyDeviceTrustOtpInput,
@@ -255,25 +262,16 @@ export const deviceTrustService = {
       }
     }
 
-    // ─── OTP rate limiting ────────────────────────────────────────────────────
-    // Re-use 2Factor session; don't spam if called within cooldown
-    // (no timestamp stored, so just attempt — 2Factor handles its own throttle)
-
-    // ─── Send OTP via 2Factor ─────────────────────────────────────────────────
+    // ── Generate OTP: use client-generated OTP if provided, otherwise generate one ──
     const phone10 = normalizePhone(user.phone);
-    const templateSegment = env.SMS_RETRIEVER_TEMPLATE ? `/${env.SMS_RETRIEVER_TEMPLATE}` : '';
-    const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/AUTOGEN${templateSegment}`;
-    const tfRes = await fetch(url);
-    const tfData = (await tfRes.json()) as { Status: string; Details: string };
+    const otp = input.clientOtp ?? generateOtp(6);
 
-    if (tfData.Status !== 'Success') {
-      throw new Error(`Failed to send OTP: ${tfData.Details}`);
-    }
+    await sendOtpViaTwoFactor(phone10, otp, input.appHash);
 
-    // Store OTP session in dedicated field (separate from account phone verify session)
+    // Store hashed OTP + expiry in DB (never store plaintext OTP)
     await prisma.user.update({
       where: { id: userId },
-      data: { deviceTrustOtpSession: tfData.Details },
+      data: { deviceTrustOtpSession: encodeOtpSession(otp) },
     });
 
     // Create/update device binding (doesn't trust yet)
@@ -315,12 +313,11 @@ export const deviceTrustService = {
       });
     }
 
-    // ─── Verify OTP with 2Factor ──────────────────────────────────────────────
-    const verifyUrl = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/VERIFY/${user.deviceTrustOtpSession}/${input.otp}`;
-    const tfRes = await fetch(verifyUrl);
-    const tfData = (await tfRes.json()) as { Status: string; Details: string };
+    // ─── Verify OTP locally (hash compare) ───────────────────────────────────
+    const decoded = decodeOtpSession(user.deviceTrustOtpSession);
+    const otpValid = decoded !== null && verifyOtpHash(input.otp, decoded.hash);
 
-    if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+    if (!otpValid) {
       // Log failed attempt
       await prisma.verificationLog.create({
         data: {

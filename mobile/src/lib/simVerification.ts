@@ -78,6 +78,20 @@ export const sendSmsForVerification = (
   simSlotIndex: number,
 ) => SimVerificationModule.sendSmsForVerification(targetNumber, message, simSlotIndex);
 
+/**
+ * Reads recent messages from the device's SMS inbox.
+ * Requires READ_SMS runtime permission.
+ * @param maxAgeSecs  Only return messages newer than this many seconds (default 120)
+ * @param senderFilter Optional substring to filter by sender address (e.g. '2Factor')
+ */
+export const readRecentSms = (
+  maxAgeSecs = 120,
+  senderFilter?: string,
+): Promise<Array<{ address: string; body: string; date: number }>> => {
+  if (!SimVerificationModule.isSmsRetrieverSupported) return Promise.resolve([]);
+  return SimVerificationModule.readRecentSms(maxAgeSecs, senderFilter);
+};
+
 // ─── Event Listeners ──────────────────────────────────────────────────────────
 
 export const onSmsReceived = SimVerificationModule.addSmsReceivedListener;

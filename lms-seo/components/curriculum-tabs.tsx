@@ -25,7 +25,7 @@ const commodityPlans = [
     title: 'Elite Plan',
     badge: 'Best Value',
     subtitle: 'Complete commodity mastery — daily live trading, personal mentorship, psychology coaching, and lifetime access.',
-    price: '₹45,000',
+    price: '₹50,000',
     duration: '6 Months',
   },
 ];
@@ -52,7 +52,7 @@ const stockPlans = [
     title: 'Elite Plan',
     badge: 'Best Value',
     subtitle: 'Complete stock market mastery — daily live trading, personal mentorship, psychology & portfolio management, lifetime access.',
-    price: '₹45,000',
+    price: '₹50,000',
     duration: '6 Months',
   },
 ];

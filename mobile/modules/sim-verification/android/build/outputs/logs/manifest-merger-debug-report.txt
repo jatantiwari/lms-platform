@@ -1,0 +1,25 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:1:1-33:12
+INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:1:1-33:12
+	package
+		ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:2:5-43
+		INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.READ_PHONE_STATE
+ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:25:3-73
+	android:name
+		ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:25:20-70
+uses-permission#android.permission.READ_PHONE_NUMBERS
+ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:26:3-75
+	android:name
+		ADDED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml:26:20-72
+uses-sdk
+INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml
+INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/adityakumardubey/Desktop/ADI/lms-v3/lms-platform/mobile/modules/sim-verification/android/src/main/AndroidManifest.xml

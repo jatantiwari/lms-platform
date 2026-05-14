@@ -8,6 +8,7 @@ export {
   stopSmsRetriever,
   startSmsUserConsent,
   sendSmsForVerification,
+  readRecentSms,
   addSmsReceivedListener,
   addSmsTimeoutListener,
   addSmsErrorListener,

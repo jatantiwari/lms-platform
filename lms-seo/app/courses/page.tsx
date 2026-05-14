@@ -6,7 +6,7 @@ import { CTASection } from '@/components/cta-section';
 
 export const metadata: Metadata = {
   title: 'Courses & Pricing - Financial Freedom Mentor | Commodity & Stock Trading Mentorship',
-  description: 'Choose from Basic (₹10,000), Pro (₹25,000), or Elite (₹45,000) plans for Commodity Trading (MCX) or Stock Trading (NSE/BSE). Live sessions, personal mentorship & more.',
+  description: 'Choose from Basic (₹10,000), Pro (₹25,000), or Elite (₹50,000) plans for Commodity Trading (MCX) or Stock Trading (NSE/BSE). Live sessions, personal mentorship & more.',
 };
 
 export default function CoursesPage() {

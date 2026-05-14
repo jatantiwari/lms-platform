@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { useState } from 'react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1';
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -16,17 +18,47 @@ export default function ContactPage() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', message: '' });
-    setTimeout(() => setSubmitted(false), 5000);
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch(`${API_URL}/seo-leads/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message ?? 'Unable to submit your message. Please try again.');
+        return;
+      }
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', message: '' });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -134,11 +166,17 @@ export default function ContactPage() {
                     </div>
                   )}
 
+                  {error && (
+                    <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <p className="text-destructive font-medium">{error}</p>
+                    </div>
+                  )}
+
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Name */}
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                        Full Name
+                        Full Name *
                       </label>
                       <Input
                         id="name"
@@ -155,7 +193,7 @@ export default function ContactPage() {
                     {/* Email */}
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                        Email Address
+                        Email Address *
                       </label>
                       <Input
                         id="email"
@@ -172,7 +210,7 @@ export default function ContactPage() {
                     {/* Phone */}
                     <div>
                       <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
-                        Phone Number (Optional)
+                        Phone Number (Optional) *
                       </label>
                       <Input
                         id="phone"
@@ -188,7 +226,7 @@ export default function ContactPage() {
                     {/* Message */}
                     <div>
                       <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                        Message
+                        Message *
                       </label>
                       <textarea
                         id="message"
@@ -205,9 +243,10 @@ export default function ContactPage() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
+                      disabled={submitting}
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold cursor-pointer"
                     >
-                      Send Message
+                      {submitting ? 'Sending...' : 'Send Message'}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center">

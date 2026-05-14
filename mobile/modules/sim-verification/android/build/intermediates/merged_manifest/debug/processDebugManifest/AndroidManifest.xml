@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="expo.modules.simverification" >
+    <!--
+    SMS Retriever BroadcastReceiver is registered dynamically in code
+    (no static manifest declaration needed for SMS_RETRIEVED_ACTION).
+    The User Consent API also uses a dynamic receiver.
+    -->
+    <uses-sdk android:minSdkVersion="24" />
+
+    <!--
+    ─── PERMISSIONS EXPLANATION ────────────────────────────────────────────────
+
+    READ_PHONE_STATE     – Required to enumerate SIM subscriptions (dual SIM).
+                           Android 13+ limits what this grants — phone number
+                           reading requires separate READ_PHONE_NUMBERS.
+
+    READ_PHONE_NUMBERS   – Required on Android 8+ to read the subscriber number
+                           from SIM. Declared separately from READ_PHONE_STATE.
+                           NOTE: Many carriers do NOT store number on SIM, so
+                           this will return "" even when granted.
+
+    ─── NOT REQUIRED (SMS Retriever API advantage) ──────────────────────────
+    READ_SMS             – NOT NEEDED. SMS Retriever reads only the matching SMS.
+    RECEIVE_SMS          – NOT NEEDED for SMS Retriever.
+                           (Your app.json currently declares RECEIVE_SMS —
+                            remove it for Play Store compliance if using
+                            SMS Retriever exclusively.)
+    ────────────────────────────────────────────────────────────────────────────
+    -->
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+
+</manifest>

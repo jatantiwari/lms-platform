@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, Users, Star, Award } from 'lucide-react';
+import { ArrowRight, TrendingUp, Users, Star, Award, Briefcase } from 'lucide-react';
 import { HeroCarousel } from '@/components/hero-carousel';
 
 export function HeroSection() {
@@ -82,7 +82,7 @@ const heroSlides = [
             </h1>
 
             <p className="text-base md:text-xl text-white/80 leading-relaxed max-w-lg">
-              Master Nifty, Bank Nifty, Sensex, Gold, Crude Oil, and Global Commodities Like a Professional
+              Master Gold, Crude Oil, and Global Commodities Like a Professional
             </p>
 
             {/* CTA Buttons */}
@@ -121,6 +121,13 @@ const heroSlides = [
                 <div>
                   <p className="text-2xl font-bold text-white leading-none">98%</p>
                   <p className="text-xs text-white/60 mt-0.5">Success Rate</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-2xl font-bold text-white leading-none">96%</p>
+                  <p className="text-xs text-white/60">Successful Job Assistance</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

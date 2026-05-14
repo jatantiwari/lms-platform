@@ -17,6 +17,13 @@ import { sendEmail, verificationEmailTemplate, passwordResetTemplate } from '../
 import { s3ImageUrl } from '../services/s3.service';
 import { env } from '../config/env';
 import prisma from '../config/prisma';
+import {
+  generateOtp,
+  sendOtpViaTwoFactor,
+  encodeOtpSession,
+  decodeOtpSession,
+  verifyOtpHash,
+} from '../utils/twoFactor';
 import crypto from 'crypto';
 
 // ─── Register ─────────────────────────────────────────────────────────────────
@@ -283,23 +290,16 @@ export const sendPhoneOtp = catchAsync(async (req: Request, res: Response) => {
 
   if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
 
-  // Strip to digits only — 2Factor expects E.164 without + for Indian numbers
+  // Strip to digits only — 2Factor expects 10-digit Indian number
   const phone = user.phone.replace(/\D/g, '').replace(/^91/, '').slice(-10);
 
-  // If a custom template is configured (required for Android SMS Retriever auto-read),
-  // use it; otherwise fall back to AUTOGEN default template.
-  const templateSegment = env.SMS_RETRIEVER_TEMPLATE ? `/${env.SMS_RETRIEVER_TEMPLATE}` : '';
-  const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN${templateSegment}`;
-  const tfRes = await fetch(url);
-  const tfData = (await tfRes.json()) as { Status: string; Details: string };
-
-  if (tfData.Status !== 'Success') {
-    throw new AppError(`Failed to send OTP: ${tfData.Details}`, 502);
-  }
+  const otp = generateOtp(6);
+  const appHash = typeof req.body?.appHash === 'string' ? req.body.appHash : undefined;
+  await sendOtpViaTwoFactor(phone, otp, appHash);
 
   await prisma.user.update({
     where: { id: userId },
-    data: { phoneOtpSession: tfData.Details },
+    data: { phoneOtpSession: encodeOtpSession(otp) },
   });
 
   sendSuccess(res, {}, 'OTP sent to your registered mobile number');
@@ -323,11 +323,9 @@ export const verifyPhoneOtp = catchAsync(async (req: Request, res: Response) => 
 
   if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
 
-  const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/VERIFY/${user.phoneOtpSession}/${otp}`;
-  const tfRes = await fetch(url);
-  const tfData = (await tfRes.json()) as { Status: string; Details: string };
-
-  if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+  // Verify OTP locally against stored hash
+  const decoded = decodeOtpSession(user.phoneOtpSession);
+  if (!decoded || !verifyOtpHash(otp, decoded.hash)) {
     throw new AppError('Invalid or expired OTP. Please try again.', 400);
   }
 

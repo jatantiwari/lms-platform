@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Users, Star, Award, ArrowRight } from 'lucide-react';
+import { TrendingUp, Users, Star, Award, ArrowRight, Briefcase } from 'lucide-react';
 import { HeroCarousel } from '../hero-carousel';
 
 const heroSlides = [
@@ -57,7 +57,7 @@ export function HeroSection() {
               Trading Mentorship
             </h1>
             <p className="text-base md:text-xl text-white/80 leading-relaxed max-w-lg">
-              Master Nifty, Bank Nifty, and stock trading with institutional-grade strategies. Join 5000+ successful traders.
+              Master Nifty, Bank Nifty, Sensex, Stock trading with institutional-grade strategies. Join 5000+ successful traders.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link href="/courses">
@@ -85,6 +85,13 @@ export function HeroSection() {
                 <div>
                   <p className="text-2xl font-bold text-white leading-none">98%</p>
                   <p className="text-xs text-white/60">Success Rate</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-2xl font-bold text-white leading-none">96%</p>
+                  <p className="text-xs text-white/60">Successful Job Assistance</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

@@ -10,7 +10,6 @@ import android.util.Log
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.auth.api.phone.SmsRetrieverClient
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.auth.api.credentials.HintRequest
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -225,6 +224,52 @@ class SimVerificationModule : Module() {
       task.addOnFailureListener { e ->
         Log.e(tag, "SMS User Consent start failed", e)
         promise.reject("USER_CONSENT_FAILED", e.message ?: "Failed to start User Consent", e)
+      }
+    }
+
+    // ─── SMS Inbox Read ────────────────────────────────────────────────────────
+
+    /**
+     * Reads recent messages from the device SMS inbox.
+     * Requires READ_SMS permission.
+     *
+     * @param maxAgeSecs  Only return messages newer than this many seconds.
+     * @param senderFilter Optional substring to match against the sender address.
+     */
+    AsyncFunction("readRecentSms") { maxAgeSecs: Int, senderFilter: String?, promise: Promise ->
+      val context = appContext.reactContext
+      if (context == null) {
+        promise.reject("NO_CONTEXT", "Context is null", null)
+        return@AsyncFunction
+      }
+      try {
+        val cutoffMs = System.currentTimeMillis() - (maxAgeSecs * 1000L)
+        val uri = android.net.Uri.parse("content://sms/inbox")
+        val cursor = context.contentResolver.query(
+          uri,
+          arrayOf("address", "body", "date"),
+          "date > ?",
+          arrayOf(cutoffMs.toString()),
+          "date DESC"
+        )
+        val messages = mutableListOf<Map<String, Any>>()
+        cursor?.use { c ->
+          val addrIdx = c.getColumnIndex("address")
+          val bodyIdx = c.getColumnIndex("body")
+          val dateIdx = c.getColumnIndex("date")
+          while (c.moveToNext()) {
+            val address = if (addrIdx >= 0) c.getString(addrIdx) ?: "" else ""
+            val body    = if (bodyIdx >= 0) c.getString(bodyIdx) ?: "" else ""
+            val date    = if (dateIdx >= 0) c.getLong(dateIdx) else 0L
+            if (senderFilter.isNullOrEmpty() || address.contains(senderFilter, ignoreCase = true)) {
+              messages.add(mapOf("address" to address, "body" to body, "date" to date))
+            }
+          }
+        }
+        promise.resolve(messages)
+      } catch (e: Exception) {
+        Log.e(tag, "readRecentSms error", e)
+        promise.reject("SMS_READ_ERROR", e.message ?: "Failed to read SMS inbox", e)
       }
     }
 

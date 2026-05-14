@@ -53,7 +53,7 @@ const commodityPlans: Plan[] = [
     id: 3,
     badge: 'Best Value',
     title: 'Elite Plan',
-    price: '₹45,000',
+    price: '₹50,000',
     duration: '6 Months',
     description: 'Full Financial Freedom Mentorship — complete mastery with personal mentorship.',
     features: [
@@ -105,7 +105,7 @@ const stockPlans: Plan[] = [
     id: 3,
     badge: 'Best Value',
     title: 'Elite Plan',
-    price: '₹45,000',
+    price: '₹50,000',
     duration: '6 Months',
     description: 'Full Financial Freedom Mentorship — complete stock market mastery with personal mentorship.',
     features: [
@@ -306,7 +306,7 @@ export function CourseShowcase() {
         <p className="text-center text-sm text-muted-foreground mt-10">
           All plans include community access and course materials.{' '}
           <Link href="/contact" className="text-primary hover:underline underline-offset-4">
-            Contact Us us
+            Contact us
           </Link>{' '}
           for group or corporate pricing.
         </p>

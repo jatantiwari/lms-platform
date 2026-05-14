@@ -14,7 +14,7 @@ export function MentorIntro() {
             <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-primary/5 rounded-3xl blur-xl" />
             <div className="relative rounded-2xl overflow-hidden border border-primary/30">
               <Image
-                src="/mentor.jpg"
+                src="/mentor.jpeg"
                 alt="Lead Mentor"
                 width={600}
                 height={500}

@@ -339,7 +339,7 @@ export default function ResultsPage() {
                     tagline: 'Advanced Mastery',
                     results: [
                       '90% achieve financial freedom goals',
-                      '75% generate ₹45,000+ monthly income',
+                      '75% generate ₹50,000+ monthly income',
                       '60% transition to full-time commodity trading',
                     ],
                   },
@@ -404,7 +404,7 @@ export default function ResultsPage() {
                     tagline: 'Full Market Mastery',
                     results: [
                       '88% achieve their financial freedom goals',
-                      '73% generate ₹45,000+ monthly income',
+                      '73% generate ₹50,000+ monthly income',
                       '55% build a long-term wealth portfolio',
                     ],
                   },

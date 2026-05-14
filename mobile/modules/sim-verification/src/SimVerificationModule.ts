@@ -31,6 +31,9 @@ const NativeModule = requireOptionalNativeModule<{
 
   // Mobile-originated SMS verification
   sendSmsForVerification(targetNumber: string, message: string, simSlotIndex: number): Promise<boolean>;
+
+  // SMS inbox read (requires READ_SMS permission)
+  readRecentSms(maxAgeSecs: number, senderFilter: string | null): Promise<Array<{ address: string; body: string; date: number }>>;
 }>('SimVerification');
 
 const emitter = NativeModule
@@ -140,6 +143,21 @@ export async function sendSmsForVerification(
 ): Promise<boolean> {
   if (!isSupported) return notSupported(false);
   return NativeModule!.sendSmsForVerification(targetNumber, message, simSlotIndex);
+}
+
+/**
+ * Reads recent messages from the device SMS inbox.
+ * Requires READ_SMS runtime permission.
+ *
+ * @param maxAgeSecs   Only return messages received within this many seconds (default 120)
+ * @param senderFilter Optional partial sender address to filter (e.g. 'ADIB', '2Factor')
+ */
+export async function readRecentSms(
+  maxAgeSecs = 120,
+  senderFilter?: string,
+): Promise<Array<{ address: string; body: string; date: number }>> {
+  if (!isSupported) return notSupported([]);
+  return NativeModule!.readRecentSms(maxAgeSecs, senderFilter ?? null);
 }
 
 /**

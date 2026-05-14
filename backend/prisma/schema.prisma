@@ -92,6 +92,8 @@ model User {
   instructorProfile       InstructorProfile?
   seoRegistrations        SeoRegistration[]  @relation("StudentSeoReg")
   instructorSeoRegistrations SeoRegistration[] @relation("InstructorSeoReg")
+  instructorSeoContactLeads SeoContactLead[] @relation("InstructorSeoContactLead")
+  instructorSeoSubscribers  SeoSubscriber[]  @relation("InstructorSeoSubscriber")
 
   @@index([role])
   @@map("users")
@@ -480,4 +482,36 @@ model SeoRegistration {
   @@index([userId])
   @@index([paymentStatus])
   @@map("seo_registrations")
+}
+
+model SeoContactLead {
+  id           String   @id @default(cuid()) @map("_id")
+  fullName     String
+  email        String
+  phone        String?
+  message      String
+  instructorId String
+  instructor   User     @relation("InstructorSeoContactLead", fields: [instructorId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([instructorId])
+  @@index([email])
+  @@map("seo_contact_leads")
+}
+
+model SeoSubscriber {
+  id           String   @id @default(cuid()) @map("_id")
+  email        String
+  isActive     Boolean  @default(true)
+  instructorId String
+  instructor   User     @relation("InstructorSeoSubscriber", fields: [instructorId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, instructorId])
+  @@index([instructorId])
+  @@map("seo_subscribers")
 }

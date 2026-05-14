@@ -13,6 +13,13 @@ import {
 } from '../validations/deviceTrust.validation';
 import prisma from '../config/prisma';
 import { env } from '../config/env';
+import {
+  generateOtp,
+  sendOtpViaTwoFactor,
+  encodeOtpSession,
+  decodeOtpSession,
+  verifyOtpHash,
+} from '../utils/twoFactor';
 
 // ─── Check device trust status ────────────────────────────────────────────────
 
@@ -107,19 +114,14 @@ export const updatePhone = catchAsync(async (req: Request, res: Response) => {
     if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
 
     const phone10 = normalizePhone(newPhone);
-    const templateSegment = env.SMS_RETRIEVER_TEMPLATE ? `/${env.SMS_RETRIEVER_TEMPLATE}` : '';
-    const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/AUTOGEN${templateSegment}`;
-    const tfRes = await fetch(url);
-    const tfData = (await tfRes.json()) as { Status: string; Details: string };
+    const generatedOtp = generateOtp(6);
 
-    if (tfData.Status !== 'Success') {
-      throw new AppError(`Failed to send OTP to new number: ${tfData.Details}`, 502);
-    }
+    await sendOtpViaTwoFactor(phone10, generatedOtp);
 
-    // Store session and pending new phone in deviceTrustOtpSession field with a prefix
+    // Store encoded session (hash|expiry) with PHONE_CHANGE prefix
     await prisma.user.update({
       where: { id: userId },
-      data: { deviceTrustOtpSession: `PHONE_CHANGE:${newPhone}:${tfData.Details}` },
+      data: { deviceTrustOtpSession: `PHONE_CHANGE:${newPhone}:${encodeOtpSession(generatedOtp)}` },
     });
 
     sendSuccess(res, {}, `OTP sent to ${newPhone.slice(0, 3)}****${newPhone.slice(-3)}`);
@@ -131,7 +133,7 @@ export const updatePhone = catchAsync(async (req: Request, res: Response) => {
     throw new AppError('No phone change session found. Please initiate the process again.', 400);
   }
 
-  const [, sessionPhone, sessionId] = user.deviceTrustOtpSession.split(':');
+  const [, sessionPhone, encodedSession] = user.deviceTrustOtpSession.split(':');
 
   // Ensure the OTP is for the same new phone
   if (normalizePhone(sessionPhone) !== normalizedNew) {
@@ -140,11 +142,9 @@ export const updatePhone = catchAsync(async (req: Request, res: Response) => {
 
   if (!env.TWOFACTOR_API_KEY) throw new AppError('SMS service not configured', 503);
 
-  const verifyUrl = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/VERIFY/${sessionId}/${otp}`;
-  const tfRes = await fetch(verifyUrl);
-  const tfData = (await tfRes.json()) as { Status: string; Details: string };
-
-  if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+  // Verify OTP locally against stored hash
+  const decoded = decodeOtpSession(encodedSession);
+  if (!decoded || !verifyOtpHash(otp, decoded.hash)) {
     throw new AppError('Invalid or expired OTP.', 400);
   }
 

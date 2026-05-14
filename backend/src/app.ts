@@ -24,7 +24,7 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = [env.FRONTEND_URL, 'http://localhost:3000'];
+      const allowedOrigins = [env.FRONTEND_URL, env.SEO_SITE_URL, 'http://localhost:3000', 'http://localhost:3001'];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

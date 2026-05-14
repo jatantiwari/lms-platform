@@ -328,3 +328,44 @@ export function seoEnrollmentConfirmTemplate(
     </div>
   `;
 }
+
+export function seoLeadStudentAckTemplate(name: string): string {
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;background:${BRAND_BG};border:1px solid #2a2a20;border-radius:12px;overflow:hidden">
+      <div style="background:${BRAND_CARD};padding:28px 32px;border-bottom:2px solid ${BRAND_GOLD}">
+        <h1 style="color:${BRAND_GOLD};margin:0;font-size:22px">Financial Freedom Mentor</h1>
+        <p style="color:#888;margin:4px 0 0;font-size:13px">Lead Confirmation</p>
+      </div>
+      <div style="padding:32px">
+        <h2 style="color:#f0ebe0;margin-bottom:8px">Thanks for reaching out, ${name}!</h2>
+        <p style="color:#a0998a;margin-bottom:16px">
+          We have received your message. Our mentor team will review your request and contact you shortly.
+        </p>
+        <p style="color:#a0998a;margin-bottom:0">If this is urgent, please call our support number.</p>
+      </div>
+    </div>
+  `;
+}
+
+export function seoLeadInstructorTemplate(
+  instructorName: string,
+  lead: { fullName: string; email: string; phone?: string; message: string },
+): string {
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;background:${BRAND_BG};border:1px solid #2a2a20;border-radius:12px;overflow:hidden">
+      <div style="background:${BRAND_CARD};padding:28px 32px;border-bottom:2px solid ${BRAND_GOLD}">
+        <h1 style="color:${BRAND_GOLD};margin:0;font-size:22px">Financial Freedom Mentor</h1>
+        <p style="color:#888;margin:4px 0 0;font-size:13px">New Contact Lead</p>
+      </div>
+      <div style="padding:32px">
+        <h2 style="color:#f0ebe0;margin-bottom:8px">Hi ${instructorName}, a new lead has arrived.</h2>
+        <div style="background:${BRAND_CARD};border:1px solid #2a2a20;border-radius:8px;padding:24px;margin-top:16px">
+          <p style="margin:0 0 8px;color:#a0998a"><strong style="color:#f0ebe0">Name:</strong> ${lead.fullName}</p>
+          <p style="margin:0 0 8px;color:#a0998a"><strong style="color:#f0ebe0">Email:</strong> ${lead.email}</p>
+          <p style="margin:0 0 8px;color:#a0998a"><strong style="color:#f0ebe0">Phone:</strong> ${lead.phone || 'Not provided'}</p>
+          <p style="margin:0;color:#a0998a"><strong style="color:#f0ebe0">Message:</strong><br/>${lead.message}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}

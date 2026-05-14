@@ -8,6 +8,7 @@ import { MentorIntro } from '@/components/home/mentor-intro';
 import { FAQ } from '@/components/home/faq';
 import { CTASection } from '@/components/cta-section';
 import { CourseShowcase } from '@/components/course-showcase';
+import { TradingRoomGallery } from '@/components/home/trading-room-gallery';
 
 
 export default function HomePage() {
@@ -22,6 +23,7 @@ export default function HomePage() {
         <MentorIntro />
         <FAQ />
         <CourseShowcase />
+        <TradingRoomGallery />
         <CTASection
           title="Ready to Ride the Bull and Rule the Bear?"
           description="Join thousands of successful traders who have achieved financial freedom through expert mentorship and proven strategies. Learn, Invest, Grow."

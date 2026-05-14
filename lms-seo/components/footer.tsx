@@ -4,8 +4,59 @@ import Link from 'next/link';
 import { Mail, Instagram, Facebook } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1';
 
 export function Footer() {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState('');
+
+  const handleSubscribe = async () => {
+    const trimmedEmail = newsletterEmail.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setSubscribeMessage('Please enter your email.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setSubscribeMessage('Please enter a valid email address.');
+      return;
+    }
+
+    setIsSubscribing(true);
+    setSubscribeMessage('');
+
+    try {
+      const res = await fetch(`${API_URL}/seo-leads/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setSubscribeMessage(data.message ?? 'Subscription failed. Please try again.');
+        return;
+      }
+
+      setSubscribeMessage('Subscribed successfully.');
+      setNewsletterEmail('');
+    } catch {
+      setSubscribeMessage('Network error. Please try again.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const handleSubscribeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      void handleSubscribe();
+    }
+  };
+
   return (
     <footer className="w-full border-t border-border bg-card">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -71,7 +122,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us Us
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -112,12 +163,26 @@ export function Footer() {
               <Input
                 type="email"
                 placeholder="Your email"
+                value={newsletterEmail}
+                onChange={(e) => {
+                  setNewsletterEmail(e.target.value);
+                  if (subscribeMessage) setSubscribeMessage('');
+                }}
+                onKeyDown={handleSubscribeKeyDown}
                 className="bg-background border-border text-foreground text-sm"
               />
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 cursor-pointer">
+              <Button
+                size="sm"
+                disabled={isSubscribing}
+                onClick={() => void handleSubscribe()}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 cursor-pointer"
+              >
                 <Mail className="w-4 h-4" />
               </Button>
             </div>
+            {subscribeMessage && (
+              <p className="text-xs text-muted-foreground mt-2">{subscribeMessage}</p>
+            )}
           </div>
         </div>
 

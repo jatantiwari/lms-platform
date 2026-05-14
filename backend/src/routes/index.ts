@@ -11,6 +11,7 @@ import hlsRouter from './hls.route';
 import instructorRouter from './instructor.route';
 import lectureRatingRouter from './lectureRating.route';
 import seoRegistrationRouter from './seoRegistration.route';
+import seoLeadRouter from './seoLead.route';
 import deviceBindingRouter from './deviceBinding.route';
 import deviceTrustRouter from './deviceTrust.route';
 import { authenticate } from '../middleware/authenticate';
@@ -31,6 +32,7 @@ router.use('/hls', hlsRouter);
 router.use('/instructor', instructorRouter);
 router.use('/lecture-ratings', lectureRatingRouter);
 router.use('/seo-registration', seoRegistrationRouter);
+router.use('/seo-leads', seoLeadRouter);
 router.use('/auth/device-binding', deviceBindingRouter);
 router.use('/auth/device-trust', deviceTrustRouter);
 

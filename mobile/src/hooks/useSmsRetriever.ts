@@ -129,16 +129,20 @@ export function useSmsRetriever({
     };
   }, []); // Empty deps — listeners registered once
 
-  // ─── Auto-start on mount ─────────────────────────────────────────────────────
+  // ─── Start / stop retriever when autoStart flag changes ─────────────────────
+  // NOTE: deps intentionally include autoStart so the retriever kicks off when
+  // the parent flips autoStart from false → true (e.g. when step becomes 'otp').
+  const startRetrieverRef = useRef(startRetriever);
+  useEffect(() => { startRetrieverRef.current = startRetriever; }, [startRetriever]);
+
   useEffect(() => {
     if (autoStart) {
-      startRetriever();
+      startRetrieverRef.current();
     }
-    // Cleanup: stop retriever if component unmounts while listening
     return () => {
       stopSmsRetriever().catch(() => {});
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoStart]); // re-run whenever autoStart changes
 
   return { status, error, startRetriever, stopRetriever };
 }

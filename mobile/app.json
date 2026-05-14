@@ -36,6 +36,7 @@
         "READ_PHONE_STATE",
         "READ_PHONE_NUMBERS",
         "SEND_SMS",
+        "READ_SMS",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
