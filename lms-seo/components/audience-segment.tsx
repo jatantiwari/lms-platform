@@ -65,7 +65,7 @@ export function AudienceSegment({ segment }: AudienceSegmentProps) {
       </div>
 
       <Link href="/courses">
-        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer">
           Explore Courses
         </Button>
       </Link>

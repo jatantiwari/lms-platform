@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Check, Clock, Flame } from 'lucide-react';
+import { Check, Clock, Flame, Sparkles, TrendingUp, BarChart2 } from 'lucide-react';
 
 interface Plan {
   id: number;
@@ -15,14 +16,14 @@ interface Plan {
   href: string;
 }
 
-const plans: Plan[] = [
+const commodityPlans: Plan[] = [
   {
     id: 1,
     badge: null,
     title: 'Basic Plan',
     price: '₹10,000',
     duration: '1 Month',
-    description: 'The perfect launchpad for absolute beginners entering commodity markets.',
+    description: 'Quick Start Program for beginners — build a strong foundation in commodity trading.',
     features: [
       'Basics of commodity trading',
       '1 core strategy',
@@ -38,11 +39,11 @@ const plans: Plan[] = [
     title: 'Pro Plan',
     price: '₹25,000',
     duration: '3 Months',
-    description: 'Full strategy system with live sessions and hands-on trade support.',
+    description: 'Complete Trader Development Program — full strategy system with live support.',
     features: [
-      'Full strategy system',
-      'Regular live trading sessions',
-      'Advanced price action',
+      'Full commodity strategy system',
+      'Regular live trading sessions (MCX hours)',
+      'Advanced price action for commodities',
       'Trade support + doubt solving',
     ],
     featured: true,
@@ -52,12 +53,12 @@ const plans: Plan[] = [
     id: 3,
     badge: 'Best Value',
     title: 'Elite Plan',
-    price: '₹50,000',
+    price: '₹45,000',
     duration: '6 Months',
-    description: 'Complete transformation from beginner to advanced with personal mentorship.',
+    description: 'Full Financial Freedom Mentorship — complete mastery with personal mentorship.',
     features: [
       'Complete mastery (Beginner → Advanced)',
-      'Daily live trading',
+      'Daily live trading (3–5 days/week)',
       'Personal mentorship',
       'Psychology coaching',
       'Lifetime access + updates',
@@ -67,7 +68,64 @@ const plans: Plan[] = [
   },
 ];
 
+const stockPlans: Plan[] = [
+  {
+    id: 1,
+    badge: null,
+    title: 'Basic Plan',
+    price: '₹10,000',
+    duration: '1 Month',
+    description: 'Quick Start Program for beginners — build a strong foundation in stock market trading.',
+    features: [
+      'Basics of stock market & NSE/BSE',
+      '1 core equity strategy',
+      'Limited live sessions',
+      'Community access',
+    ],
+    featured: false,
+    href: '/courses',
+  },
+  {
+    id: 2,
+    badge: 'Most Popular',
+    title: 'Pro Plan',
+    price: '₹25,000',
+    duration: '3 Months',
+    description: 'Complete Stock Trader Development Program — full strategy system with live support.',
+    features: [
+      'Full equity & F&O strategy system',
+      'Regular live trading sessions (NSE hours)',
+      'Advanced technical analysis for stocks',
+      'Trade support + doubt solving',
+    ],
+    featured: true,
+    href: '/courses',
+  },
+  {
+    id: 3,
+    badge: 'Best Value',
+    title: 'Elite Plan',
+    price: '₹45,000',
+    duration: '6 Months',
+    description: 'Full Financial Freedom Mentorship — complete stock market mastery with personal mentorship.',
+    features: [
+      'Complete mastery (Beginner → Advanced)',
+      'Daily live trading (3–5 days/week)',
+      'Personal mentorship',
+      'Psychology & portfolio management',
+      'Lifetime access + updates',
+    ],
+    featured: false,
+    href: '/courses',
+  },
+];
+
+type Category = 'commodity' | 'stock';
+
 export function CourseShowcase() {
+  const [activeCategory, setActiveCategory] = useState<Category>('commodity');
+  const plans = activeCategory === 'commodity' ? commodityPlans : stockPlans;
+
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       {/* background glow */}
@@ -75,16 +133,53 @@ export function CourseShowcase() {
 
       <div className="container max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+        <div className="text-center max-w-3xl mx-auto mb-10 space-y-4">
           <span className="inline-block text-xs font-bold tracking-[0.2em] uppercase text-primary border border-primary/30 bg-primary/10 px-4 py-1.5 rounded-full">
-            Featured Courses
+            Pricing Structure
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground leading-tight">
             Choose Your{' '}
             <span className="text-primary">Trading Plan</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Structured programs for every stage — from first trade to full-time trading career.
+            Separate programs for Commodity Trading and Stock Trading — same world-class mentorship.
+          </p>
+        </div>
+
+        {/* Category Tab Switcher */}
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-card border border-border">
+            <button
+              onClick={() => setActiveCategory('commodity')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 cursor-pointer ${
+                activeCategory === 'commodity'
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <BarChart2 className="w-4 h-4" />
+              Commodity Trading
+            </button>
+            <button
+              onClick={() => setActiveCategory('stock')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 cursor-pointer ${
+                activeCategory === 'stock'
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              Stock Trading
+            </button>
+          </div>
+        </div>
+
+        {/* Section label */}
+        <div className="text-center mb-8">
+          <p className="text-muted-foreground text-sm">
+            {activeCategory === 'commodity'
+              ? 'Plans for MCX Commodity Trading (Gold, Silver, Crude Oil & more)'
+              : 'Plans for NSE/BSE Stock Trading (Equity, F&O & more)'}
           </p>
         </div>
 
@@ -99,7 +194,7 @@ export function CourseShowcase() {
                   : 'border-border hover:border-primary/40'
               }`}
             >
-              {/* Gold shimmer top line (always on featured, hover on others) */}
+              {/* Gold shimmer top line */}
               <div
                 className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent transition-opacity duration-300 ${
                   plan.featured ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
@@ -117,7 +212,7 @@ export function CourseShowcase() {
                 {/* Badge */}
                 {plan.badge && (
                   <div className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-primary-foreground bg-primary px-3 py-1 rounded-full mb-4">
-                    <Flame className="w-3 h-3" />
+                    {plan.badge === 'Most Popular' ? <Flame className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
                     {plan.badge}
                   </div>
                 )}
@@ -158,7 +253,7 @@ export function CourseShowcase() {
               <div className="px-7 pb-8 bg-card">
                 <Link href={plan.href} className="block">
                   <button
-                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
                       plan.featured
                         ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40'
                         : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/60'
@@ -172,11 +267,46 @@ export function CourseShowcase() {
           ))}
         </div>
 
+        {/* Program Features Highlight */}
+        <div className="mt-16 p-8 rounded-2xl bg-card border border-border relative overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
+          <h3 className="text-xl font-extrabold text-foreground text-center mb-6">
+            Program Features (All Plans)
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {(activeCategory === 'commodity'
+              ? [
+                  'Live trading sessions (MCX hours)',
+                  'Recorded lectures access',
+                  'Daily trade setups',
+                  'Private community (Telegram/Discord)',
+                  'Personal mentorship support',
+                  'Lifetime strategy updates (Elite only)',
+                  'Guide for all NISM exams',
+                ]
+              : [
+                  'Live trading sessions (NSE hours)',
+                  'Recorded lectures access',
+                  'Daily stock & F&O setups',
+                  'Private community (Telegram/Discord)',
+                  'Personal mentorship support',
+                  'Lifetime strategy updates (Elite only)',
+                  'Guide for all NISM exams',
+                ]
+            ).map((feature) => (
+              <div key={feature} className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-xs text-muted-foreground">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Footer note */}
         <p className="text-center text-sm text-muted-foreground mt-10">
           All plans include community access and course materials.{' '}
           <Link href="/contact" className="text-primary hover:underline underline-offset-4">
-            Contact us
+            Contact Us us
           </Link>{' '}
           for group or corporate pricing.
         </p>

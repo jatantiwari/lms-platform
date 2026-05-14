@@ -47,14 +47,14 @@ export default function ContactPage() {
           </div>
         </section>
 
-        {/* Contact Info & Form */}
+        {/* Contact Us Info & Form */}
         <section className="w-full py-16 md:py-24">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              {/* Contact Info */}
+              {/* Contact Us Info */}
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6">Contact Information</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Contact Us Information</h2>
                   <p className="text-muted-foreground mb-8">
                     Reach out to our team and we&apos;ll get back to you as soon as possible.
                   </p>
@@ -65,8 +65,8 @@ export default function ContactPage() {
                     <Mail className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                      <a href="mailto:ffmentor2024@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
-                        ffmentor2024@gmail.com
+                      <a href="mailto:info@ffmentor.com" className="text-muted-foreground hover:text-primary transition-colors">
+                        info@ffmentor.com
                       </a>
                     </div>
                   </div>
@@ -76,7 +76,7 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Phone / WhatsApp</h3>
                       <a href="tel:+918000160017" className="text-muted-foreground hover:text-primary transition-colors">
-                        +91 80001 60017
+                        +91 98317 40535
                       </a>
                     </div>
                   </div>
@@ -121,7 +121,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Contact Form */}
+              {/* Contact Us Form */}
               <div className="lg:col-span-2">
                 <div className="bg-card border border-border rounded-xl p-8 md:p-10">
                   <h2 className="text-2xl font-bold text-foreground mb-6">Send us a Message</h2>
@@ -180,7 +180,7 @@ export default function ContactPage() {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+1 (555) 123-4567"
+                        placeholder="+91 9871234567"
                         className="w-full bg-background border-border text-foreground placeholder-muted-foreground"
                       />
                     </div>
@@ -205,7 +205,7 @@ export default function ContactPage() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold cursor-pointer"
                     >
                       Send Message
                     </Button>

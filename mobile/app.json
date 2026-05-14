@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6C3EF4"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": false,
@@ -24,7 +24,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#6C3EF4"
+        "backgroundColor": "#FFFFFF"
       },
       "package": "com.alldigitalideas.adiboost",
       "permissions": [
@@ -34,7 +34,9 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "READ_PHONE_STATE",
-        "READ_PHONE_NUMBERS"
+        "READ_PHONE_NUMBERS",
+        "SEND_SMS",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -48,8 +50,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#6C3EF4",
+          "color": "#FF6B00",
           "sounds": []
         }
       ],
@@ -65,9 +66,11 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "02db826c-08eb-4d61-b7ff-5e7f2f91ae5e"
       }
-    }
+    },
+    "owner": "jatanadi"
   }
 }

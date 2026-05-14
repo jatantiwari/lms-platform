@@ -90,7 +90,7 @@ export function CourseCard({
             <p className="text-xs text-muted-foreground">One-time payment</p>
           </div>
           <Link href="/contact">
-            <Button className={featured ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}>
+            <Button className={featured ? 'bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer' : 'bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer'}>
               Enroll Now
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>

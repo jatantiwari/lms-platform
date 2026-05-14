@@ -8,6 +8,8 @@ import {
   verifyDeviceTrustOtpSchema,
   checkDeviceTrustSchema,
   updatePhoneSchema,
+  initSmsVerifySchema,
+  smsWebhookSchema,
 } from '../validations/deviceTrust.validation';
 import prisma from '../config/prisma';
 import { env } from '../config/env';
@@ -197,4 +199,73 @@ export const updatePhone = catchAsync(async (req: Request, res: Response) => {
   });
 
   sendSuccess(res, {}, 'Phone number updated successfully. Please re-verify your device for course access.');
+});
+
+// ─── Init mobile-originated SMS verification ──────────────────────────────────
+
+export const initSmsVerify = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const parsed = initSmsVerifySchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new AppError(`Validation error: ${parsed.error.issues[0].message}`, 400);
+  }
+
+  const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+    ?? req.socket.remoteAddress
+    ?? 'unknown';
+
+  try {
+    const result = await deviceTrustService.initSmsVerify(userId, parsed.data, ipAddress);
+    sendSuccess(res, result, 'SMS verification initiated');
+  } catch (err: unknown) {
+    const e = err as Error & { code?: string; statusCode?: number };
+    if (e.code === 'PHONE_MISMATCH') throw new ForbiddenError(e.message);
+    throw new AppError(e.message ?? 'Failed to initiate SMS verification', e.statusCode ?? 500);
+  }
+});
+
+// ─── Poll SMS verify status ───────────────────────────────────────────────────
+
+export const smsVerifyStatus = catchAsync(async (req: Request, res: Response) => {
+  const { sessionToken } = req.query;
+  if (!sessionToken || typeof sessionToken !== 'string' || sessionToken.length !== 40) {
+    throw new AppError('Invalid sessionToken', 400);
+  }
+  const result = deviceTrustService.checkSmsVerifyStatus(sessionToken);
+  sendSuccess(res, result, 'SMS verify status');
+});
+
+// ─── SMS webhook (Twilio / 2Factor inbound) ───────────────────────────────────
+// This endpoint is called by the SMS gateway when a device sends an SMS to our number.
+// No auth middleware — protected by webhook secret header.
+
+export const smsWebhook = catchAsync(async (req: Request, res: Response) => {
+  // Validate webhook secret to prevent spoofing
+  if (env.SMS_WEBHOOK_SECRET) {
+    const provided = req.headers['x-webhook-secret'] ?? req.headers['x-twilio-signature'];
+    if (!provided || provided !== env.SMS_WEBHOOK_SECRET) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+  }
+
+  const parsed = smsWebhookSchema.safeParse(req.body);
+  if (!parsed.success) {
+    // Respond 200 to prevent gateway retry loops
+    res.status(200).json({ status: 'ignored' });
+    return;
+  }
+
+  const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+    ?? req.socket.remoteAddress
+    ?? 'unknown';
+
+  await deviceTrustService.processSmsWebhook(
+    parsed.data.From,
+    parsed.data.Body,
+    ipAddress,
+  );
+
+  // Always respond 200 to SMS gateways
+  res.status(200).json({ status: 'ok' });
 });

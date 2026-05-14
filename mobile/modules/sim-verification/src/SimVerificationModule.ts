@@ -28,6 +28,9 @@ const NativeModule = requireOptionalNativeModule<{
 
   // User Consent API (shows system dialog)
   startSmsUserConsent(senderPhone?: string): Promise<boolean>;
+
+  // Mobile-originated SMS verification
+  sendSmsForVerification(targetNumber: string, message: string, simSlotIndex: number): Promise<boolean>;
 }>('SimVerification');
 
 const emitter = NativeModule
@@ -118,6 +121,25 @@ export async function stopSmsRetriever(): Promise<void> {
 export async function startSmsUserConsent(senderPhone?: string): Promise<boolean> {
   if (!isSupported) return notSupported(false);
   return NativeModule!.startSmsUserConsent(senderPhone);
+}
+
+/**
+ * Sends an SMS FROM the device SIM to the backend's verification number.
+ * Proves that the user's enrolled SIM is physically present in this device.
+ *
+ * Requires SEND_SMS permission (requested by useSimPermissions hook).
+ *
+ * @param targetNumber  Backend's virtual phone number
+ * @param message       "ADI-VERIFY <sessionToken>" — must be sent verbatim
+ * @param simSlotIndex  0 = SIM 1, 1 = SIM 2 (dual-SIM devices)
+ */
+export async function sendSmsForVerification(
+  targetNumber: string,
+  message: string,
+  simSlotIndex: number,
+): Promise<boolean> {
+  if (!isSupported) return notSupported(false);
+  return NativeModule!.sendSmsForVerification(targetNumber, message, simSlotIndex);
 }
 
 /**

@@ -3,6 +3,9 @@ package expo.modules.simverification
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
+import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import android.util.Log
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.auth.api.phone.SmsRetrieverClient
@@ -222,6 +225,48 @@ class SimVerificationModule : Module() {
       task.addOnFailureListener { e ->
         Log.e(tag, "SMS User Consent start failed", e)
         promise.reject("USER_CONSENT_FAILED", e.message ?: "Failed to start User Consent", e)
+      }
+    }
+
+    // ─── Mobile-Originated SMS ─────────────────────────────────────────────
+
+    /**
+     * Sends a plain-text SMS from a specific device SIM to a target number.
+     * Used for mobile-originated SMS verification (proves SIM ownership to backend).
+     *
+     * Requires SEND_SMS permission.
+     * On dual-SIM devices, uses the SIM at [simSlotIndex]; falls back to default SIM.
+     *
+     * @param targetNumber  Phone number to send to (backend's virtual number)
+     * @param message       SMS body (e.g. "ADI-VERIFY <sessionToken>")
+     * @param simSlotIndex  0 for SIM 1, 1 for SIM 2
+     */
+    AsyncFunction("sendSmsForVerification") { targetNumber: String, message: String, simSlotIndex: Int, promise: Promise ->
+      val activity = appContext.activityProvider?.currentActivity
+      if (activity == null) {
+        promise.reject("NO_ACTIVITY", "Activity is null", null)
+        return@AsyncFunction
+      }
+      try {
+        val smsManager: SmsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+          val subscriptionId = SimCardHelper.getSubscriptionIdForSlot(activity, simSlotIndex)
+          if (subscriptionId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            @Suppress("DEPRECATION")
+            SmsManager.getSmsManagerForSubscriptionId(subscriptionId)
+          } else {
+            @Suppress("DEPRECATION")
+            SmsManager.getDefault()
+          }
+        } else {
+          @Suppress("DEPRECATION")
+          SmsManager.getDefault()
+        }
+        smsManager.sendTextMessage(targetNumber, null, message, null, null)
+        Log.d(tag, "Verification SMS sent to $targetNumber via slot $simSlotIndex")
+        promise.resolve(true)
+      } catch (e: Exception) {
+        Log.e(tag, "sendSmsForVerification error", e)
+        promise.reject("SMS_SEND_FAILED", e.message ?: "Failed to send SMS", e)
       }
     }
 

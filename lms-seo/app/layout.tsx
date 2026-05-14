@@ -31,20 +31,21 @@ export const metadata: Metadata = {
     description: 'Master stock market trading with expert mentorship. Ride the bull, rule the bear.',
   },
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
+    // icon: [
+    //   {
+    //     url: '/icon-light-32x32.png',
+    //     media: '(prefers-color-scheme: light)',
+    //   },
+    //   {
+    //     url: '/icon-dark-32x32.png',
+    //     media: '(prefers-color-scheme: dark)',
+    //   },
+    //   {
+    //     url: '/icon.svg',
+    //     type: 'image/svg+xml',
+    //   },
+    // ],
+    icon: '/favicon.ico',
     apple: '/apple-icon.png',
   },
   robots: {
@@ -76,7 +77,7 @@ export default function RootLayout({
       '@type': 'ContactPoint',
       contactType: 'Customer Service',
       telephone: '+91-80001-60017',
-      email: 'ffmentor2024@gmail.com',
+      email: 'info@ffmentor.com',
     },
     aggregateRating: {
       '@type': 'AggregateRating',

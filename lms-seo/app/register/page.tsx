@@ -24,8 +24,10 @@ type FormData = {
   address: string;
   educationalQualification: string;
   occupation: string;
+  courseCategory: string;
   preferredCoursePlan: string;
   previousCommodityTradingExperience: string;
+  previousStockTradingExperience: string;
   whyJoin: string;
 };
 
@@ -43,9 +45,11 @@ const EMPTY_FORM: FormData = {
   address: '',
   educationalQualification: '',
   occupation: '',
+  courseCategory: 'Commodity Trading (MCX)',
   preferredCoursePlan: 'Basic',
   previousCommodityTradingExperience: 'No',
-  whyJoin: '',
+  previousStockTradingExperience: 'No',
+  whyJoin: ''
 };
 
 export default function RegisterPage() {
@@ -115,7 +119,7 @@ export default function RegisterPage() {
         amount,
         currency,
         name: 'Financial Freedom Mentor',
-        description: `${formData.preferredCoursePlan} Plan — Commodity Trading Mentorship`,
+        description: `${formData.preferredCoursePlan} Plan — ${formData.courseCategory} Mentorship`,
         order_id: razorpayOrderId,
         prefill: { name: studentName, email: emailId, contact: formData.mobileNumber },
         theme: { color: '#D4A017' },
@@ -205,7 +209,7 @@ export default function RegisterPage() {
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
-                <span className="text-sm font-semibold text-primary tracking-wide">Commodity Trading Mentorship</span>
+                <span className="text-sm font-semibold text-primary tracking-wide">Commodity &amp; Stock Market Mentorship</span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Student <span className="text-primary">Registration</span>
@@ -263,6 +267,14 @@ export default function RegisterPage() {
                   <div>
                     <h3 className="text-xl font-bold text-foreground mb-6 pb-3 border-b border-border">Course Selection</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="md:col-span-2">
+                        <label htmlFor="courseCategory" className="block text-sm font-medium text-foreground mb-2">Course Category <span className="text-destructive">*</span></label>
+                        <select id="courseCategory" name="courseCategory" value={formData.courseCategory} onChange={handleChange}
+                          className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                          <option value="Commodity Trading (MCX)">Commodity Trading (MCX) — Gold, Silver, Crude Oil, Natural Gas</option>
+                          <option value="Stock Market Trading (NSE/BSE)">Stock Market Trading (NSE/BSE) — Equity, F&amp;O, Swing Trading</option>
+                        </select>
+                      </div>
                       <div>
                         <label htmlFor="preferredCoursePlan" className="block text-sm font-medium text-foreground mb-2">Preferred Course Plan <span className="text-destructive">*</span></label>
                         <select id="preferredCoursePlan" name="preferredCoursePlan" value={formData.preferredCoursePlan} onChange={handleChange}
@@ -279,6 +291,14 @@ export default function RegisterPage() {
                       <div>
                         <label htmlFor="previousCommodityTradingExperience" className="block text-sm font-medium text-foreground mb-2">Previous Commodity Trading Experience <span className="text-destructive">*</span></label>
                         <select id="previousCommodityTradingExperience" name="previousCommodityTradingExperience" value={formData.previousCommodityTradingExperience} onChange={handleChange}
+                          className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                          <option value="No">No</option>
+                          <option value="Yes">Yes</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="previousStockTradingExperience" className="block text-sm font-medium text-foreground mb-2">Previous Stock Market Trading Experience <span className="text-destructive">*</span></label>
+                        <select id="previousStockTradingExperience" name="previousStockTradingExperience" value={formData.previousStockTradingExperience} onChange={handleChange}
                           className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                           <option value="No">No</option>
                           <option value="Yes">Yes</option>
@@ -309,7 +329,7 @@ export default function RegisterPage() {
                   </div>
 
                   <Button type="submit" disabled={submitting}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-bold shadow-lg shadow-primary/25">
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-bold shadow-lg shadow-primary/25 cursor-pointer">
                     {submitting ? (
                       <span className="flex items-center gap-2"><Loader2 className="w-5 h-5 animate-spin" />Processing…</span>
                     ) : (

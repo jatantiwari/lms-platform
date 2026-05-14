@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "155821368910",
+    "project_id": "aefire-a0b31",
+    "storage_bucket": "aefire-a0b31.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155821368910:android:e4cbe68497897b2b32051f",
+        "android_client_info": {
+          "package_name": "com.alldigitalideas.adiboost"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwmKNUhpqF9KRRbWdoeWnqf0AByA7xBcc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

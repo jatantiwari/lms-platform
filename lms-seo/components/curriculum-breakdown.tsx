@@ -125,7 +125,7 @@ export function CurriculumBreakdown() {
                   }`}
                 >
                   <button
-                    className="w-full flex items-center gap-4 px-5 py-4 text-left"
+                    className="w-full flex items-center gap-4 px-5 py-4 text-left cursor-pointer"
                     onClick={() => setOpenModule(isOpen ? null : mod.id)}
                   >
                     <div

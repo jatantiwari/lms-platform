@@ -63,7 +63,7 @@ export default function DataDeletionPage() {
 
               <div className="space-y-3">
                 {[
-                  { step: '1', title: 'Send a Request', desc: 'Email us at ffmentor2024@gmail.com with the subject line: "Data Deletion Request".' },
+                  { step: '1', title: 'Send a Request', desc: 'Email us at info@ffmentor.com with the subject line: "Data Deletion Request".' },
                   { step: '2', title: 'Provide Verification', desc: 'Include your registered full name, email address, and mobile number so we can verify your identity.' },
                   { step: '3', title: 'Confirmation', desc: 'We will acknowledge your request within 3 business days and confirm deletion within 30 days.' },
                 ].map(({ step, title, desc }) => (
@@ -106,11 +106,11 @@ export default function DataDeletionPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-3">7. Contact Us</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-3">7. Contact Us Us</h2>
               <div className="bg-card border border-border rounded-xl p-5 space-y-1">
                 <p className="font-semibold text-foreground">Financial Freedom Mentor — Data Privacy</p>
-                <p>Email: <a href="mailto:ffmentor2024@gmail.com" className="text-primary hover:underline">ffmentor2024@gmail.com</a></p>
-                <p>Phone / WhatsApp: <a href="tel:+918000160017" className="text-primary hover:underline">+91 80001 60017</a></p>
+                <p>Email: <a href="mailto:info@ffmentor.com" className="text-primary hover:underline">info@ffmentor.com</a></p>
+                <p>Phone / WhatsApp: <a href="tel:+918000160017" className="text-primary hover:underline">+91 98317 40535</a></p>
                 <p>Website: <a href="https://www.ffmentor.com" className="text-primary hover:underline">www.ffmentor.com</a></p>
               </div>
             </div>

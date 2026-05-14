@@ -22,13 +22,13 @@ export function Footer() {
               Learn, Invest, Grow. Master commodity trading with expert mentorship and proven strategies for lasting financial freedom.
             </p>
             <div className="mt-4 space-y-1 text-sm">
-              <a href="mailto:ffmentor2024@gmail.com" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+              <a href="mailto:info@ffmentor.com" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
                 <Mail className="w-4 h-4 text-primary" />
-                ffmentor2024@gmail.com
+                info@ffmentor.com
               </a>
               <a href="tel:+918000160017" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
                 <span className="w-4 h-4 text-primary text-xs font-bold">📞</span>
-                +91 80001 60017
+                +91 98317 40535
               </a>
             </div>
           </div>
@@ -71,7 +71,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
+                  Contact Us Us
                 </Link>
               </li>
             </ul>
@@ -114,7 +114,7 @@ export function Footer() {
                 placeholder="Your email"
                 className="bg-background border-border text-foreground text-sm"
               />
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground px-3">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 cursor-pointer">
                 <Mail className="w-4 h-4" />
               </Button>
             </div>

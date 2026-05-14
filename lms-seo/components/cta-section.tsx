@@ -44,13 +44,13 @@ export function CTASection({
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={primaryButtonHref}>
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto cursor-pointer">
                 {primaryButtonText}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
             <Link href={secondaryButtonHref}>
-              <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-card w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-card w-full sm:w-auto cursor-pointer">
                 {secondaryButtonText}
               </Button>
             </Link>

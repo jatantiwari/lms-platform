@@ -106,12 +106,12 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-3">11. Contact Us</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-3">11. Contact Us Us</h2>
               <p>For any questions regarding these Terms, please contact:</p>
               <div className="mt-3 bg-card border border-border rounded-xl p-5 space-y-1">
                 <p className="font-semibold text-foreground">Financial Freedom Mentor</p>
-                <p>Email: <a href="mailto:ffmentor2024@gmail.com" className="text-primary hover:underline">ffmentor2024@gmail.com</a></p>
-                <p>Phone: <a href="tel:+918000160017" className="text-primary hover:underline">+91 80001 60017</a></p>
+                <p>Email: <a href="mailto:info@ffmentor.com" className="text-primary hover:underline">info@ffmentor.com</a></p>
+                <p>Phone: <a href="tel:+918000160017" className="text-primary hover:underline">+91 98317 40535</a></p>
               </div>
             </div>
 

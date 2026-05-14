@@ -1,14 +1,14 @@
 import { Metadata } from 'next';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { CurriculumDetail } from '@/components/curriculum-detail';
+import { CurriculumTabs } from '@/components/curriculum-tabs';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { BookOpen, Check } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Curriculum - Financial Freedom Mentor | Commodity Trading Education',
-  description: 'Module-by-module curriculum for our commodity trading mentorship — MCX, Gold, Silver, Crude Oil, Natural Gas and global commodities.',
+  title: 'Curriculum - Financial Freedom Mentor | Trading Education',
+  description: 'Module-by-module curriculum for Commodity Trading and Stock Trading mentorship — MCX, NSE, Gold, Silver, Crude Oil, Equity, F&O and more.',
 };
 
 export default function CurriculumPage() {
@@ -30,7 +30,7 @@ export default function CurriculumPage() {
                 Detailed <span className="text-primary">Curriculum</span>
               </h1>
               <p className="text-base md:text-xl text-muted-foreground">
-                Module-by-module breakdown across all three plans — from commodity basics to live execution and personal mentorship.
+                Module-by-module breakdown for Commodity Trading and Stock Trading — Basic, Pro, and Elite plans.
               </p>
             </div>
           </div>
@@ -39,83 +39,7 @@ export default function CurriculumPage() {
         {/* Curriculum Sections */}
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 gap-16">
-
-              {/* Basic Plan */}
-              <div>
-                <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h2 className="text-3xl font-extrabold text-foreground">Basic Plan</h2>
-                    <p className="text-muted-foreground mt-2 max-w-xl">
-                      Foundations of commodity trading — MCX structure, price action, and your first intraday strategies.
-                    </p>
-                  </div>
-                  <div className="md:text-right shrink-0">
-                    <div className="text-3xl font-extrabold text-primary">₹10,000</div>
-                    <div className="text-sm text-muted-foreground">1 Month</div>
-                    <Link href="/courses" className="mt-3 inline-block">
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Enroll Now
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <CurriculumDetail courseType="beginner" />
-              </div>
-
-              <div className="h-px bg-border" />
-
-              {/* Pro Plan */}
-              <div>
-                <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h2 className="text-3xl font-extrabold text-foreground">
-                      Pro Plan{' '}
-                      <span className="ml-2 text-sm font-bold tracking-wider uppercase text-primary-foreground bg-primary px-2.5 py-0.5 rounded-full align-middle">
-                        Most Popular
-                      </span>
-                    </h2>
-                    <p className="text-muted-foreground mt-2 max-w-xl">
-                      Full strategy system with regular live trading sessions, advanced price action, and doubt-solving support.
-                    </p>
-                  </div>
-                  <div className="md:text-right shrink-0">
-                    <div className="text-3xl font-extrabold text-primary">₹25,000</div>
-                    <div className="text-sm text-muted-foreground">3 Months</div>
-                    <Link href="/courses" className="mt-3 inline-block">
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Enroll Now
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <CurriculumDetail courseType="intermediate" />
-              </div>
-
-              <div className="h-px bg-border" />
-
-              {/* Elite Plan */}
-              <div>
-                <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h2 className="text-3xl font-extrabold text-foreground">Elite Plan</h2>
-                    <p className="text-muted-foreground mt-2 max-w-xl">
-                      Complete mastery from beginner to advanced — daily live trading, personal mentorship, psychology coaching, and lifetime access.
-                    </p>
-                  </div>
-                  <div className="md:text-right shrink-0">
-                    <div className="text-3xl font-extrabold text-primary">₹50,000</div>
-                    <div className="text-sm text-muted-foreground">6 Months</div>
-                    <Link href="/courses" className="mt-3 inline-block">
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Enroll Now
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <CurriculumDetail courseType="advanced" />
-              </div>
-            </div>
+            <CurriculumTabs />
 
             {/* What's Included */}
             <div className="mt-20 p-8 rounded-2xl bg-card border border-border relative overflow-hidden">

@@ -2,14 +2,20 @@
  * DeviceVerificationModal
  *
  * Full-screen overlay shown when a student tries to access a course on an
- * unverified device. Guides them through:
- *   1. Detecting SIM cards and device fingerprint
- *   2. Sending OTP to enrolled phone (with optional SIM mismatch error)
- *   3. Auto-reading OTP via SMS Retriever or manual entry
- *   4. On success → marks device as trusted → calls onVerified()
+ * unverified device. Implements a two-phase verification flow:
  *
- * Does NOT navigate away — embeds the full flow inline so the student
- * returns seamlessly to the course they tried to open.
+ * PRIMARY  — Mobile-originated SMS
+ *   1. App calls backend → gets sessionToken + targetNumber + smsBody
+ *   2. App sends SMS from device SIM ("ADI-VERIFY <token>") to backend's number
+ *   3. Backend webhook validates sender phone = enrolled phone → marks device trusted
+ *   4. App polls for confirmation (45 s window)
+ *
+ * FALLBACK — Backend-sent OTP (auto-read via SMS Retriever API)
+ *   1. Backend sends OTP via 2Factor to enrolled phone
+ *   2. App auto-reads it via SMS Retriever (no user action required)
+ *   3. App submits OTP with nonce + timestamp (anti-replay)
+ *
+ * Does NOT navigate away — embeds the full flow inline.
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
@@ -20,20 +26,46 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import * as SecureStore from 'expo-secure-store';
 import { OtpInput } from '../PhoneVerification/OtpInput';
 import { SimSelector } from '../PhoneVerification/SimSelector';
 import { useSmsRetriever } from '../../hooks/useSmsRetriever';
 import { useSimPermissions } from '../../hooks/useSimPermissions';
+import { useDeviceSmsVerify } from '../../hooks/useDeviceSmsVerify';
 import { getSimCards, getDeviceFingerprint, getSecurityStatus } from '../../lib/simVerification';
 import { useDeviceTrustStore } from '../../store/deviceTrustStore';
 import { deviceTrustApi } from '../../lib/api';
 import { Colors, Spacing } from '../../constants/theme';
+
+const FALLBACK_DEVICE_ID_KEY = 'fallback_device_id';
+
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+async function getFallbackDeviceId(): Promise<string> {
+  try {
+    const stored = await SecureStore.getItemAsync(FALLBACK_DEVICE_ID_KEY);
+    if (stored) return stored;
+    const id = generateUUID();
+    await SecureStore.setItemAsync(FALLBACK_DEVICE_ID_KEY, id);
+    return id;
+  } catch {
+    return generateUUID();
+  }
+}
 
 const C = {
   text: Colors.gray900,
@@ -51,11 +83,19 @@ interface DeviceVerificationModalProps {
   enrolledPhone: string | null;
   onVerified: () => void;
   onDismiss?: () => void;
-  /** Whether user is allowed to close without verifying */
   dismissible?: boolean;
 }
 
-type Step = 'intro' | 'sending' | 'otp' | 'verifying' | 'success' | 'phone_mismatch' | 'error';
+type Step =
+  | 'intro'
+  | 'sms_sending'    // sending verification SMS from device SIM
+  | 'sms_waiting'    // polling backend for webhook confirmation
+  | 'sending'        // backend sending OTP (fallback)
+  | 'otp'            // enter / auto-read OTP
+  | 'verifying'
+  | 'success'
+  | 'phone_mismatch'
+  | 'error';
 
 const EMPTY_DIGITS = () => Array(6).fill('') as string[];
 
@@ -78,17 +118,33 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
   const [fingerprintHash, setFingerprintHash] = useState('');
   const [simPhone, setSimPhone] = useState('');
   const [simCarrier, setSimCarrier] = useState('');
+  // Countdown display for SMS waiting step
+  const [waitCountdown, setWaitCountdown] = useState(45);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const markTrusted = useDeviceTrustStore((s) => s.markTrusted);
   const { requestPermissions } = useSimPermissions();
 
-  // ─── SMS Retriever ───────────────────────────────────────────────────────────
+  // ─── SMS Retriever (auto-reads OTP for fallback flow) ────────────────────────
   const { status: smsStatus } = useSmsRetriever({
     autoStart: step === 'otp',
     onOtpDetected: (otp) => {
       const arr = otp.split('').slice(0, 6);
       while (arr.length < 6) arr.push('');
       setDigits(arr);
+    },
+  });
+
+  // ─── Mobile-originated SMS hook ──────────────────────────────────────────────
+  const { initiate: initiateSmsVerify } = useDeviceSmsVerify({
+    onVerified: async () => {
+      await markTrusted({ deviceId, fingerprintHash, phone: enrolledPhone });
+      setStep('success');
+      setTimeout(onVerified, 1200);
+    },
+    onFallbackToOtp: () => {
+      // SMS path timed out or failed → start OTP flow
+      handleSendOtp();
     },
   });
 
@@ -99,10 +155,29 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
       setDigits(EMPTY_DIGITS());
       setShakeTrigger(false);
       setErrorMsg('');
+      setWaitCountdown(45);
       loadDeviceInfo();
     }
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
+
+  // ─── Countdown timer when waiting for SMS webhook ────────────────────────────
+  useEffect(() => {
+    if (step === 'sms_waiting') {
+      setWaitCountdown(45);
+      countdownRef.current = setInterval(() => {
+        setWaitCountdown((n) => Math.max(0, n - 1));
+      }, 1000);
+    } else {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    }
+  }, [step]);
 
   // ─── Load device fingerprint + SIM cards ─────────────────────────────────────
   const loadDeviceInfo = useCallback(async () => {
@@ -110,9 +185,13 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
     setLoadingSims(true);
     try {
       const fp = await getDeviceFingerprint();
-      if (fp) {
+      if (fp?.deviceId && fp?.fingerprintHash) {
         setDeviceId(fp.deviceId);
         setFingerprintHash(fp.fingerprintHash);
+      } else {
+        const fallbackId = await getFallbackDeviceId();
+        setDeviceId(fallbackId);
+        setFingerprintHash(fallbackId);
       }
 
       const perms = await requestPermissions();
@@ -127,11 +206,10 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
           setSimCarrier(selected.carrierName ?? '');
         }
       }
-    } catch { /* ignore, graceful degradation */ }
+    } catch { /* graceful degradation */ }
     setLoadingSims(false);
   }, [requestPermissions]);
 
-  // Update simPhone when user changes SIM selection
   useEffect(() => {
     if (simCards.length > 0 && selectedSimSlot < simCards.length) {
       setSimPhone(simCards[selectedSimSlot].phoneNumber ?? '');
@@ -139,7 +217,33 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
     }
   }, [selectedSimSlot, simCards]);
 
-  // ─── Send OTP ─────────────────────────────────────────────────────────────────
+  // ─── Primary: start mobile-originated SMS verification ───────────────────────
+  const handleStartVerification = useCallback(async () => {
+    if (!deviceId || !fingerprintHash) {
+      Toast.show({ type: 'error', text1: 'Device info not ready. Please wait a moment.' });
+      return;
+    }
+    const secStatus = Platform.OS === 'android' ? await getSecurityStatus() : null;
+
+    setStep('sms_sending');
+    await initiateSmsVerify({
+      deviceId,
+      fingerprintHash,
+      simPhoneNumber: simPhone,
+      simCarrier,
+      simSlot: selectedSimSlot,
+      simSlotIndex: selectedSimSlot,
+      platform: Platform.OS as 'android' | 'ios',
+      isRooted: secStatus?.isRooted ?? false,
+      isEmulator: secStatus?.isEmulator ?? false,
+    });
+
+    // If SMS was sent, hook transitions us to 'waiting' via onFallbackToOtp / onVerified
+    // We reflect the hook's state here:
+    setStep((prev) => (prev === 'sms_sending' ? 'sms_waiting' : prev));
+  }, [deviceId, fingerprintHash, simPhone, simCarrier, selectedSimSlot, initiateSmsVerify]);
+
+  // ─── Fallback: backend sends OTP ─────────────────────────────────────────────
   const handleSendOtp = useCallback(async () => {
     if (!deviceId || !fingerprintHash) {
       Toast.show({ type: 'error', text1: 'Device fingerprint not available. Please restart the app.' });
@@ -171,7 +275,7 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
     }
   }, [deviceId, fingerprintHash, simPhone, simCarrier, selectedSimSlot]);
 
-  // ─── Verify OTP ───────────────────────────────────────────────────────────────
+  // ─── Verify OTP (anti-replay: nonce + timestamp) ──────────────────────────────
   const handleVerifyOtp = useCallback(async () => {
     const otp = digits.join('');
     if (otp.length < 6) {
@@ -190,13 +294,12 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
         simSlot: selectedSimSlot,
         isRooted: secStatus?.isRooted ?? false,
         isEmulator: secStatus?.isEmulator ?? false,
+        nonce: generateUUID(),
+        timestamp: Date.now(),
       });
 
-      // Persist trust locally
       await markTrusted({ deviceId, fingerprintHash, phone: enrolledPhone });
       setStep('success');
-
-      // Brief success moment then close
       setTimeout(onVerified, 1200);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
@@ -220,8 +323,10 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
       </View>
       <Text style={styles.title}>Verify Your Device</Text>
       <Text style={styles.subtitle}>
-        To access course content, we need to verify that this is your registered mobile device.
-        {'\n\n'}An OTP will be sent to your enrolled mobile number.
+        To access course content, we need to verify that this is your registered device
+        with your enrolled SIM card.
+        {'\n\n'}
+        We'll automatically send a verification message from your SIM — no code entry needed.
       </Text>
 
       {Platform.OS === 'android' && simCards.length > 1 && (
@@ -241,20 +346,62 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
 
       <TouchableOpacity
         style={[styles.primaryBtn, loadingSims && styles.btnDisabled]}
+        onPress={handleStartVerification}
+        disabled={loadingSims}
+        accessibilityRole="button"
+        accessibilityLabel="Verify device with SIM"
+      >
+        <Ionicons name="phone-portrait-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
+        <Text style={styles.primaryBtnText}>Verify Device with SIM</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.textBtn}
         onPress={handleSendOtp}
         disabled={loadingSims}
         accessibilityRole="button"
-        accessibilityLabel="Send verification OTP"
       >
-        <Ionicons name="send-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
-        <Text style={styles.primaryBtnText}>Send Verification Code</Text>
+        <Text style={styles.textBtnText}>Use OTP instead</Text>
       </TouchableOpacity>
 
       {dismissible && (
         <TouchableOpacity style={styles.textBtn} onPress={onDismiss}>
-          <Text style={styles.textBtnText}>Verify later</Text>
+          <Text style={[styles.textBtnText, { color: C.textSecondary }]}>Verify later</Text>
         </TouchableOpacity>
       )}
+    </View>
+  );
+
+  const renderSmsSending = () => (
+    <View style={styles.stepContainer}>
+      <ActivityIndicator size="large" color={Colors.primary} />
+      <Text style={styles.title}>Sending Verification…</Text>
+      <Text style={styles.subtitle}>
+        Sending a silent verification message from your SIM.
+        {'\n'}This only takes a moment.
+      </Text>
+    </View>
+  );
+
+  const renderSmsWaiting = () => (
+    <View style={styles.stepContainer}>
+      <View style={styles.iconCircle}>
+        <Ionicons name="checkmark-done-outline" size={40} color={Colors.primary} />
+      </View>
+      <Text style={styles.title}>Verifying Your SIM…</Text>
+      <Text style={styles.subtitle}>
+        Verification message sent from your SIM.{'\n'}
+        Confirming with our server — this usually takes under 10 seconds.
+      </Text>
+
+      <View style={styles.countdownRow}>
+        <ActivityIndicator size="small" color={Colors.primary} />
+        <Text style={styles.countdownText}> Waiting… {waitCountdown}s</Text>
+      </View>
+
+      <TouchableOpacity style={styles.textBtn} onPress={handleSendOtp}>
+        <Text style={styles.textBtnText}>Switch to OTP instead</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -289,11 +436,7 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
         </View>
       )}
 
-      <OtpInput
-        value={digits}
-        onChange={setDigits}
-        shake={shakeTrigger}
-      />
+      <OtpInput value={digits} onChange={setDigits} shake={shakeTrigger} />
 
       <TouchableOpacity
         style={styles.primaryBtn}
@@ -323,7 +466,7 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
         <Ionicons name="checkmark-circle" size={48} color={C.success} />
       </View>
       <Text style={styles.title}>Device Verified!</Text>
-      <Text style={styles.subtitle}>You now have access to this course. Enjoy learning!</Text>
+      <Text style={styles.subtitle}>Your device and SIM have been verified. Enjoy your course!</Text>
     </View>
   );
 
@@ -382,13 +525,15 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
 
   const renderStep = () => {
     switch (step) {
-      case 'intro': return renderIntro();
-      case 'sending': return renderSending();
-      case 'otp': return renderOtp();
-      case 'verifying': return renderVerifying();
-      case 'success': return renderSuccess();
+      case 'intro':         return renderIntro();
+      case 'sms_sending':   return renderSmsSending();
+      case 'sms_waiting':   return renderSmsWaiting();
+      case 'sending':       return renderSending();
+      case 'otp':           return renderOtp();
+      case 'verifying':     return renderVerifying();
+      case 'success':       return renderSuccess();
       case 'phone_mismatch': return renderPhoneMismatch();
-      case 'error': return renderError();
+      case 'error':         return renderError();
     }
   };
 
@@ -401,7 +546,12 @@ export const DeviceVerificationModal: React.FC<DeviceVerificationModalProps> = (
     >
       <SafeAreaView style={styles.container}>
         {dismissible && step !== 'verifying' && step !== 'success' && (
-          <TouchableOpacity style={styles.closeBtn} onPress={onDismiss} accessibilityRole="button" accessibilityLabel="Close">
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={onDismiss}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+          >
             <Ionicons name="close" size={24} color={C.text} />
           </TouchableOpacity>
         )}
@@ -477,6 +627,15 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 8,
   },
+  countdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  countdownText: {
+    fontSize: 14,
+    color: C.textSecondary,
+  },
   smsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -521,3 +680,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+

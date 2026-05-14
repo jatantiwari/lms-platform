@@ -101,6 +101,34 @@ export function generateDeviceSessionToken(deviceId: string, userId: string): st
   return crypto.createHmac('sha256', secret).update(payload).digest('hex');
 }
 
+// ─── Nonce anti-replay store (in-process, 90-second TTL) ─────────────────────
+// For multi-process deployments, replace with Redis SETNX.
+const usedNonces = new Map<string, number>();
+
+/**
+ * Returns true if the nonce has NOT been seen before (and stores it).
+ * Returns false if the nonce is a replay.
+ */
+export function checkAndConsumeNonce(nonce: string): boolean {
+  const now = Date.now();
+  // Purge expired entries
+  for (const [n, exp] of usedNonces) {
+    if (exp < now) usedNonces.delete(n);
+  }
+  if (usedNonces.has(nonce)) return false;
+  usedNonces.set(nonce, now + 90_000);
+  return true;
+}
+
+/**
+ * Validates that a client timestamp is within ±30 seconds of server time.
+ * Prevents replay of captured requests.
+ */
+export function isTimestampFresh(clientTimestampMs: number): boolean {
+  const diff = Math.abs(Date.now() - clientTimestampMs);
+  return diff <= 30_000;
+}
+
 // ─── Internal ────────────────────────────────────────────────────────────────
 
 function sanitize(value: string | undefined): string | undefined {

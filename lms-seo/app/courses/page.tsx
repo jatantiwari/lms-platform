@@ -1,66 +1,13 @@
 import { Metadata } from 'next';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { PricingTable } from '@/components/pricing-table';
+import { CoursesContent } from '@/components/courses-content';
 import { CTASection } from '@/components/cta-section';
 
 export const metadata: Metadata = {
-  title: 'Courses & Pricing - Financial Freedom Mentor | Commodity Trading Mentorship',
-  description: 'Choose from Basic (₹10,000), Pro (₹25,000), or Elite (₹50,000) commodity trading mentorship plans. MCX Gold, Silver, Crude Oil and more.',
+  title: 'Courses & Pricing - Financial Freedom Mentor | Commodity & Stock Trading Mentorship',
+  description: 'Choose from Basic (₹10,000), Pro (₹25,000), or Elite (₹45,000) plans for Commodity Trading (MCX) or Stock Trading (NSE/BSE). Live sessions, personal mentorship & more.',
 };
-
-const pricingPlans = [
-  {
-    name: 'Basic',
-    price: 10000,
-    currency: '₹',
-    duration: '1 Month',
-    description: 'Perfect launchpad for beginners entering commodity markets.',
-    features: [
-      { name: 'Basics of commodity trading', included: true },
-      { name: '1 core strategy', included: true },
-      { name: 'Limited live sessions', included: true },
-      { name: 'Community access', included: true },
-      { name: 'Full strategy system', included: false },
-      { name: 'Advanced price action', included: false },
-      { name: 'Personal mentorship', included: false },
-      { name: 'Lifetime access + updates', included: false },
-    ],
-  },
-  {
-    name: 'Pro',
-    price: 25000,
-    currency: '₹',
-    duration: '3 Months',
-    description: 'Full strategy system with live trading and hands-on support.',
-    popular: true,
-    features: [
-      { name: 'All Basic Plan content', included: true },
-      { name: 'Full strategy system', included: true },
-      { name: 'Regular live trading sessions', included: true },
-      { name: 'Advanced price action', included: true },
-      { name: 'Trade support + doubt solving', included: true },
-      { name: 'Personal mentorship', included: false },
-      { name: 'Daily live trading', included: false },
-      { name: 'Lifetime access + updates', included: false },
-    ],
-  },
-  {
-    name: 'Elite',
-    price: 50000,
-    currency: '₹',
-    duration: '6 Months',
-    description: 'Complete mastery — Beginner to Advanced with personal mentorship.',
-    features: [
-      { name: 'All Pro Plan content', included: true },
-      { name: 'Complete mastery (Beginner → Advanced)', included: true },
-      { name: 'Daily live trading', included: true },
-      { name: 'Personal mentorship', included: true },
-      { name: 'Psychology coaching', included: true },
-      { name: 'Lifetime access + updates', included: true },
-    ],
-  },
-];
 
 export default function CoursesPage() {
   return (
@@ -72,13 +19,13 @@ export default function CoursesPage() {
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto space-y-5">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
-                <span className="text-sm font-semibold text-primary tracking-wide">Commodity Trading Mentorship</span>
+                <span className="text-sm font-semibold text-primary tracking-wide">Commodity & Stock Trading Mentorship</span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-foreground leading-tight">
                 Simple, Transparent <span className="text-primary">Pricing</span>
               </h1>
               <p className="text-base md:text-xl text-muted-foreground">
-                Three plans designed to take you from complete beginner to professional commodity trader. No hidden fees.
+                Separate programs for Commodity Trading and Stock Trading — same three plans, same world-class mentorship. No hidden fees.
               </p>
             </div>
           </div>
@@ -87,7 +34,7 @@ export default function CoursesPage() {
         {/* Pricing Cards */}
         <section className="w-full py-20 bg-background">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <PricingTable plans={pricingPlans} />
+            <CoursesContent />
           </div>
         </section>
 
@@ -100,20 +47,28 @@ export default function CoursesPage() {
             <div className="space-y-6">
               {[
                 {
-                  q: 'What commodities will I learn to trade?',
-                  a: 'You will learn to trade Gold, Silver, Crude Oil, and Natural Gas on MCX, along with global commodities including LME metals and COMEX futures in the Elite Plan.',
+                  q: 'What is the difference between Commodity Trading and Stock Trading programs?',
+                  a: 'The Commodity Trading program focuses on MCX markets — Gold, Silver, Crude Oil, Natural Gas, and Copper. The Stock Trading program covers NSE/BSE equity, intraday, swing, F&O, and long-term investing. Both follow the same Basic / Pro / Elite plan structure at the same prices.',
+                },
+                {
+                  q: 'What will I learn in the Commodity Trading program?',
+                  a: 'You will learn MCX market structure, contract specifications, commodity price drivers, technical analysis, intraday & swing strategies for Gold/Silver/Crude Oil, risk management, trading psychology, and live trading with personal mentorship in the Elite plan.',
+                },
+                {
+                  q: 'What will I learn in the Stock Trading program?',
+                  a: 'You will learn stock market basics, NSE/BSE structure, technical analysis, candlestick patterns, intraday & swing strategies, options trading (beginner to intermediate), fundamental analysis, portfolio building, trading psychology — all the way to becoming an independent trader.',
                 },
                 {
                   q: 'Do I need prior trading experience?',
-                  a: 'Absolutely not. The Basic Plan starts from zero — we cover what commodities are, how MCX works, contract specs, and your first strategy. No prior experience is needed.',
+                  a: 'Absolutely not. The Basic Plan in both programs starts from zero — covering market basics, order types, charts, and foundational strategies. No prior experience is needed.',
                 },
                 {
                   q: 'Are the live sessions recorded?',
-                  a: 'Yes. All live sessions are recorded and available for replay. You can learn at your own pace alongside the live schedule.',
+                  a: 'Yes. All live sessions are recorded and available for replay. Elite plan includes lifetime access to all recordings.',
                 },
                 {
                   q: 'What is the difference between Pro and Elite?',
-                  a: 'Pro gives you the full strategy system with regular live sessions and doubt solving. Elite adds daily live trading, personal one-on-one mentorship, psychology coaching, and lifetime access with all future updates.',
+                  a: 'Pro gives you the full strategy system, live trading sessions (2–3 days/week for stock, regular MCX hours for commodity), trade setups, weekly Q&A, VIP community, risk management, and psychology training. Elite adds daily live sessions (3–5 days/week), 1-on-1 mentorship (3–5 calls), a personalized trading plan, advanced risk management, options/income strategies, priority WhatsApp support, lifetime access, and certification.',
                 },
                 {
                   q: 'Do you offer a money-back guarantee?',
@@ -121,7 +76,7 @@ export default function CoursesPage() {
                 },
                 {
                   q: 'How do I choose the right plan?',
-                  a: 'If you are a complete beginner with limited capital, start with Basic. If you want a full strategy system with live support, choose Pro. If you want personal mentorship and daily live trading, invest in Elite. Contact us for a free consultation.',
+                  a: 'If you are a complete beginner, start with Basic. If you are serious about developing real trading skills, choose Pro (most popular). For full transformation with personal mentorship and lifetime access, invest in Elite. Contact Us us for a free consultation to pick the right program and plan.',
                 },
               ].map((item, i) => (
                 <div key={i} className="border-b border-border pb-6 last:border-b-0">
@@ -134,8 +89,8 @@ export default function CoursesPage() {
         </section>
 
         <CTASection
-          title="Start Your Commodity Trading Journey Today"
-          description="Join thousands of successful MCX traders. Choose your plan and get started with expert mentorship — from basics to daily live trading."
+          title="Start Your Trading Journey Today"
+          description="Choose Commodity or Stock Trading — and pick the plan that fits your goals. Expert mentorship from basics to live trading to complete financial freedom."
           primaryButtonText="Enroll Now"
           primaryButtonHref="/register"
         />

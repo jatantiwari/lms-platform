@@ -55,7 +55,7 @@ export function PricingCard({ name, price, currency = '$', duration = '/month', 
         {/* CTA Button */}
         <Link href="/register" className="w-full block mb-8">
           <Button
-            className={`w-full ${
+            className={`w-full cursor-pointer ${
               highlighted || popular
                 ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 : 'border border-primary text-primary hover:bg-primary/10'

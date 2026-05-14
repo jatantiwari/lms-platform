@@ -3,33 +3,62 @@
  *
  * Manages device trust verification for course access gating.
  *
- * ── Flow ─────────────────────────────────────────────────────────────────────
- * 1. Student taps "Start Course" on mobile
- * 2. App sends device fingerprint → GET /auth/device-trust/check
- * 3. If trusted: allow access
- * 4. If not trusted:
- *    a. App shows DeviceVerificationModal
- *    b. User selects SIM → POST /auth/device-trust/send-otp
- *       - Backend checks simPhoneNumber (if provided) against user.phone
- *       - If mismatch → 403 PHONE_MISMATCH
- *       - Sends OTP to user.phone via 2Factor
- *    c. User enters OTP (auto-read via SMS Retriever) → POST /auth/device-trust/verify-otp
- *       - OTP verified → DeviceBinding.isTrustedForCourseAccess = true
- *       - Logs to VerificationLog
+ * ── Primary Flow (mobile-originated SMS) ─────────────────────────────────────
+ * 1. App calls POST /auth/device-trust/init-sms-verify
+ *    → Backend generates sessionToken, returns targetNumber + smsBody
+ * 2. App sends SMS from device SIM: "ADI-VERIFY <sessionToken>"
+ * 3. SMS gateway webhook calls POST /auth/device-trust/sms-webhook
+ *    → Backend validates sender = enrolled phone, token valid
+ *    → Marks device as trusted
+ * 4. App polls GET /auth/device-trust/sms-verify-status?sessionToken=...
+ *    → Returns { verified: true } when complete
+ *
+ * ── Fallback Flow (OTP) ───────────────────────────────────────────────────────
+ * 1. App calls POST /auth/device-trust/send-otp
+ * 2. Backend sends OTP to enrolled phone via 2Factor
+ * 3. App auto-reads OTP via SMS Retriever, or user types it
+ * 4. App calls POST /auth/device-trust/verify-otp with nonce+timestamp (anti-replay)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import crypto from 'crypto';
 import prisma from '../config/prisma';
 import { env } from '../config/env';
-import { isFingerprintMatch } from '../utils/deviceBinding';
+import { isFingerprintMatch, checkAndConsumeNonce, isTimestampFresh } from '../utils/deviceBinding';
 import type {
   SendDeviceTrustOtpInput,
   VerifyDeviceTrustOtpInput,
   CheckDeviceTrustInput,
+  InitSmsVerifyInput,
 } from '../validations/deviceTrust.validation';
 
 const MAX_DEVICES_PER_USER = 3;
 const OTP_COOLDOWN_MS = 60 * 1000; // 60 seconds between OTP sends
+
+// ─── In-memory SMS verification sessions (5-min TTL) ─────────────────────────
+// Maps sessionToken → session state.  Replace with Redis for multi-process.
+interface SmsVerifySession {
+  userId: string;
+  deviceId: string;
+  fingerprintHash: string;
+  enrolledPhone: string;
+  platform: string;
+  isRooted: boolean;
+  isEmulator: boolean;
+  simCarrier?: string;
+  simSlot?: number;
+  expiresAt: number;
+  verified: boolean;
+}
+
+const smsSessions = new Map<string, SmsVerifySession>();
+
+function pruneSmsSessions() {
+  const now = Date.now();
+  for (const [token, session] of smsSessions) {
+    if (session.expiresAt < now) smsSessions.delete(token);
+  }
+}
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -255,6 +284,7 @@ export const deviceTrustService = {
 
   /**
    * Verify OTP and mark device as trusted for course access.
+   * Enforces nonce + timestamp anti-replay.
    */
   async verifyDeviceTrustOtp(
     userId: string,
@@ -263,6 +293,14 @@ export const deviceTrustService = {
   ): Promise<VerifyOtpResult> {
     if (!env.TWOFACTOR_API_KEY) {
       throw new Error('SMS service not configured');
+    }
+
+    // ─── Anti-replay: timestamp + nonce ───────────────────────────────────────
+    if (!isTimestampFresh(input.timestamp)) {
+      throw Object.assign(new Error('Request expired. Please try again.'), { statusCode: 400 });
+    }
+    if (!checkAndConsumeNonce(input.nonce)) {
+      throw Object.assign(new Error('Duplicate request detected. Please try again.'), { statusCode: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -345,5 +383,198 @@ export const deviceTrustService = {
       isTrusted: true,
       deviceBindingId: trustedBinding.id,
     };
+  },
+
+  // ─── Mobile-Originated SMS Verification ────────────────────────────────────
+
+  /**
+   * Step 1: App calls this to get the session token and SMS body.
+   * Returns the target number the app should send the SMS to.
+   */
+  async initSmsVerify(
+    userId: string,
+    input: InitSmsVerifyInput,
+    ipAddress: string,
+  ): Promise<{ sessionToken: string; targetNumber: string; smsBody: string; expiresAt: number }> {
+    if (!env.DEVICE_SMS_TARGET_NUMBER) {
+      throw Object.assign(new Error('SMS verification not configured on this server.'), {
+        statusCode: 503,
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, phone: true, phoneVerified: true },
+    });
+
+    if (!user) throw new Error('User not found');
+    if (!user.phone) throw new Error('No enrolled phone number. Please update your profile.');
+    if (!user.phoneVerified)
+      throw new Error('Phone number not verified. Please verify your phone first.');
+
+    // Block rooted / emulator devices
+    if (input.isRooted) {
+      throw Object.assign(new Error('Access denied: rooted devices cannot be verified.'), {
+        statusCode: 403,
+      });
+    }
+
+    // Optional SIM mismatch check (if app could read SIM phone number)
+    const simPhone = (input.simPhoneNumber ?? '').trim();
+    if (simPhone.length >= 10 && !phonesMatch(user.phone, simPhone)) {
+      await prisma.verificationLog.create({
+        data: {
+          userId,
+          deviceId: input.deviceId,
+          type: 'DEVICE_TRUST_SMS',
+          status: 'BLOCKED',
+          phone: maskPhone(user.phone),
+          failureReason: 'SIM phone number does not match enrolled phone',
+          ipAddress,
+          platform: input.platform,
+          isRooted: input.isRooted,
+          isEmulator: input.isEmulator,
+        },
+      });
+      throw Object.assign(
+        new Error('The SIM in this device does not match your enrolled mobile number.'),
+        { code: 'PHONE_MISMATCH', statusCode: 403 },
+      );
+    }
+
+    pruneSmsSessions();
+
+    // Generate a cryptographically random session token
+    const sessionToken = crypto.randomBytes(20).toString('hex');
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+    smsSessions.set(sessionToken, {
+      userId,
+      deviceId: input.deviceId,
+      fingerprintHash: input.fingerprintHash,
+      enrolledPhone: user.phone,
+      platform: input.platform,
+      isRooted: input.isRooted,
+      isEmulator: input.isEmulator,
+      simCarrier: input.simCarrier,
+      simSlot: input.simSlot,
+      expiresAt,
+      verified: false,
+    });
+
+    // The SMS body the device must send verbatim
+    const smsBody = `ADI-VERIFY ${sessionToken}`;
+
+    return {
+      sessionToken,
+      targetNumber: env.DEVICE_SMS_TARGET_NUMBER,
+      smsBody,
+      expiresAt,
+    };
+  },
+
+  /**
+   * Step 2 (webhook): Called by SMS gateway when an SMS arrives at our number.
+   * Validates sender phone == enrolled phone, token valid → marks device trusted.
+   */
+  async processSmsWebhook(
+    fromNumber: string,
+    body: string,
+    ipAddress: string,
+  ): Promise<void> {
+    pruneSmsSessions();
+
+    // Extract token: "ADI-VERIFY <40-char-hex>"
+    const match = body.trim().match(/^ADI-VERIFY\s+([0-9a-f]{40})$/i);
+    if (!match) return; // Not our format — ignore silently
+
+    const sessionToken = match[1].toLowerCase();
+    const session = smsSessions.get(sessionToken);
+
+    if (!session || session.expiresAt < Date.now()) {
+      smsSessions.delete(sessionToken);
+      return; // Expired or unknown token
+    }
+
+    if (session.verified) return; // Already processed
+
+    // Validate sender phone == enrolled phone
+    if (!phonesMatch(session.enrolledPhone, fromNumber)) {
+      await prisma.verificationLog.create({
+        data: {
+          userId: session.userId,
+          deviceId: session.deviceId,
+          type: 'DEVICE_TRUST_SMS',
+          status: 'BLOCKED',
+          phone: maskPhone(session.enrolledPhone),
+          failureReason: `Sender mismatch: expected ${maskPhone(session.enrolledPhone)} got ${maskPhone(fromNumber)}`,
+          ipAddress,
+          platform: session.platform,
+          isRooted: session.isRooted,
+          isEmulator: session.isEmulator,
+        },
+      });
+      return;
+    }
+
+    // Mark session verified in memory
+    session.verified = true;
+
+    // Persist device binding as trusted
+    const input = {
+      deviceId: session.deviceId,
+      fingerprintHash: session.fingerprintHash,
+      simCarrier: session.simCarrier,
+      simSlot: session.simSlot,
+      isRooted: session.isRooted,
+      isEmulator: session.isEmulator,
+      platform: session.platform as 'android' | 'ios' | 'web',
+    };
+    const binding = await getOrCreateDeviceBinding(session.userId, input as SendDeviceTrustOtpInput);
+
+    const trusted = await prisma.deviceBinding.update({
+      where: { id: binding.id },
+      data: {
+        isTrustedForCourseAccess: true,
+        requiresReverification: false,
+        verifiedMobileNumber: session.enrolledPhone,
+        verificationCount: { increment: 1 },
+        trustedAt: new Date(),
+        carrierName: session.simCarrier,
+        simSlotIndex: session.simSlot,
+        lastSeenAt: new Date(),
+      },
+    });
+
+    await prisma.verificationLog.create({
+      data: {
+        userId: session.userId,
+        deviceId: session.deviceId,
+        deviceBindingId: trusted.id,
+        type: 'DEVICE_TRUST_SMS',
+        status: 'SUCCESS',
+        phone: maskPhone(session.enrolledPhone),
+        ipAddress,
+        platform: session.platform,
+        isRooted: session.isRooted,
+        isEmulator: session.isEmulator,
+      },
+    });
+  },
+
+  /**
+   * Step 3 (poll): App polls this until verified or expired.
+   */
+  checkSmsVerifyStatus(
+    sessionToken: string,
+  ): { verified: boolean; expired: boolean } {
+    pruneSmsSessions();
+    const session = smsSessions.get(sessionToken);
+    if (!session) return { verified: false, expired: true };
+    if (session.expiresAt < Date.now()) {
+      smsSessions.delete(sessionToken);
+      return { verified: false, expired: true };
+    }
+    return { verified: session.verified, expired: false };
   },
 };

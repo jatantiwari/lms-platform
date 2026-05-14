@@ -47,6 +47,12 @@ const envSchema = z.object({
   // Device binding HMAC secret (min 32 chars)
   DEVICE_BINDING_SECRET: z.string().min(16).optional().default('change-me-device-binding-secret-32'),
 
+  // Mobile-originated SMS verification
+  // Virtual number (e.g. Twilio/2Factor) that receives verification SMS from devices
+  DEVICE_SMS_TARGET_NUMBER: z.string().optional().default(''),
+  // Secret token shared with SMS gateway webhook (e.g. Twilio auth token or custom header)
+  SMS_WEBHOOK_SECRET: z.string().optional().default(''),
+
   // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
 });

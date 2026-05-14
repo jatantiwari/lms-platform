@@ -67,6 +67,17 @@ export const stopSmsRetriever = () => SimVerificationModule.stopSmsRetriever();
 export const startSmsUserConsent = (senderPhone?: string) =>
   SimVerificationModule.startSmsUserConsent(senderPhone);
 
+/**
+ * Sends an SMS FROM the device SIM to the backend's verification number.
+ * Proves SIM ownership without the user having to enter anything.
+ * Requires SEND_SMS runtime permission.
+ */
+export const sendSmsForVerification = (
+  targetNumber: string,
+  message: string,
+  simSlotIndex: number,
+) => SimVerificationModule.sendSmsForVerification(targetNumber, message, simSlotIndex);
+
 // ─── Event Listeners ──────────────────────────────────────────────────────────
 
 export const onSmsReceived = SimVerificationModule.addSmsReceivedListener;

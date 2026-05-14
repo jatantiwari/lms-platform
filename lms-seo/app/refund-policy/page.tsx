@@ -38,7 +38,7 @@ export default function RefundPolicyPage() {
                   <h3 className="font-semibold text-primary mb-2">Within 7 Days of Payment</h3>
                   <p>
                     If you have not attended any live session or accessed course material, you are eligible for a full refund within 7 days of your payment date. Submit your request to{' '}
-                    <a href="mailto:ffmentor2024@gmail.com" className="text-primary hover:underline">ffmentor2024@gmail.com</a>.
+                    <a href="mailto:info@ffmentor.com" className="text-primary hover:underline">info@ffmentor.com</a>.
                   </p>
                 </div>
 
@@ -73,7 +73,7 @@ export default function RefundPolicyPage() {
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-3">4. Refund Process</h2>
               <ol className="list-decimal list-inside space-y-2 pl-2">
-                <li>Email your refund request to <a href="mailto:ffmentor2024@gmail.com" className="text-primary hover:underline">ffmentor2024@gmail.com</a> with your registered name, email, payment ID, and reason for refund.</li>
+                <li>Email your refund request to <a href="mailto:info@ffmentor.com" className="text-primary hover:underline">info@ffmentor.com</a> with your registered name, email, payment ID, and reason for refund.</li>
                 <li>Our team will review and respond within <strong className="text-foreground">3 business days</strong>.</li>
                 <li>Approved refunds will be processed back to the original payment method within <strong className="text-foreground">7–10 business days</strong> via Razorpay.</li>
               </ol>
@@ -87,11 +87,11 @@ export default function RefundPolicyPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-3">6. Contact for Refund Requests</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-3">6. Contact Us for Refund Requests</h2>
               <div className="bg-card border border-border rounded-xl p-5 space-y-1">
                 <p className="font-semibold text-foreground">Financial Freedom Mentor — Support</p>
-                <p>Email: <a href="mailto:ffmentor2024@gmail.com" className="text-primary hover:underline">ffmentor2024@gmail.com</a></p>
-                <p>Phone / WhatsApp: <a href="tel:+918000160017" className="text-primary hover:underline">+91 80001 60017</a></p>
+                <p>Email: <a href="mailto:info@ffmentor.com" className="text-primary hover:underline">info@ffmentor.com</a></p>
+                <p>Phone / WhatsApp: <a href="tel:+918000160017" className="text-primary hover:underline">+91 98317 40535</a></p>
                 <p className="text-sm mt-2 text-muted-foreground">Please include your payment ID and registered email in all refund communications.</p>
               </div>
             </div>

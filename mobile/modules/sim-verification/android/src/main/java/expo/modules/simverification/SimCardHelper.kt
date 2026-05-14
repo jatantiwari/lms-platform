@@ -131,4 +131,33 @@ object SimCardHelper {
       "" // Permission denied or not available
     }
   }
+
+  /**
+   * Returns the Android subscription ID for a given SIM slot index.
+   * Returns SubscriptionManager.INVALID_SUBSCRIPTION_ID if unavailable.
+   * Used to send SMS from a specific SIM on dual-SIM devices.
+   */
+  @SuppressLint("MissingPermission")
+  fun getSubscriptionIdForSlot(context: Context, slotIndex: Int): Int {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+      return SubscriptionManager.INVALID_SUBSCRIPTION_ID
+    }
+
+    val hasPermission = ContextCompat.checkSelfPermission(
+      context, android.Manifest.permission.READ_PHONE_STATE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!hasPermission) return SubscriptionManager.INVALID_SUBSCRIPTION_ID
+
+    val subscriptionManager = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE)
+      as? SubscriptionManager ?: return SubscriptionManager.INVALID_SUBSCRIPTION_ID
+
+    return try {
+      subscriptionManager.activeSubscriptionInfoList
+        ?.find { it.simSlotIndex == slotIndex }
+        ?.subscriptionId ?: SubscriptionManager.INVALID_SUBSCRIPTION_ID
+    } catch (e: SecurityException) {
+      SubscriptionManager.INVALID_SUBSCRIPTION_ID
+    }
+  }
 }
