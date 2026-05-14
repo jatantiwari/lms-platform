@@ -100,7 +100,7 @@ const heroSlides = [
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto cursor-pointer"
+                  className="border-white/30 text-black hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto cursor-pointer"
                 >
                   Get Free Consultation
                 </Button>

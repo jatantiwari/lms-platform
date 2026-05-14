@@ -50,7 +50,7 @@ export function CTASection({
               </Button>
             </Link>
             <Link href={secondaryButtonHref}>
-              <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-card w-full sm:w-auto cursor-pointer">
+              <Button size="lg" variant="outline" className="border-border text-black hover:bg-card w-full sm:w-auto cursor-pointer">
                 {secondaryButtonText}
               </Button>
             </Link>
