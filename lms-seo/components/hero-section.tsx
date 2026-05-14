@@ -10,7 +10,7 @@ export function HeroSection() {
 const heroSlides = [
   {
     id: 1,
-    image: 'c1.png',
+    image: 'c1-white.png',
     alt: 'Course Overview',
     badge: '🚀 Start Your Journey',
     title: 'Learn, Invest, Grow',
@@ -18,7 +18,7 @@ const heroSlides = [
   },
   {
     id: 2,
-    image: 'c2.png',
+    image: 'c2-white.png',
     alt: 'Expert Mentors',
     badge: '👨‍🏫 World-Class Faculty',
     title: '50+ Expert Mentors',
@@ -26,7 +26,7 @@ const heroSlides = [
   },
   {
     id: 3,
-    image: 'c3.png',
+    image: 'c3-white.png',
     alt: 'Student Success',
     badge: '🏆 Proven Results',
     title: '5000+ Successful Students',
@@ -34,7 +34,7 @@ const heroSlides = [
   },
   {
     id: 4,
-    image: 'c4.png',
+    image: 'c4-white.png',
     alt: 'Market Mastery',
     badge: '📈 Advanced Strategies',
     title: 'Ride the Bull, Rule the Bear',
@@ -42,7 +42,7 @@ const heroSlides = [
   },
   {
     id: 5,
-    image: 'c5.png',
+    image: 'c5-white.png',
     alt: 'Financial Freedom',
     badge: '💰 Your Future Awaits',
     title: 'Achieve Financial Freedom',
