@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
+import { AnimatedAboutGallery } from '@/components/animated-about-gallery';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
@@ -145,24 +146,7 @@ export default function AboutPage() {
                 Real traders, real screens, real results — a glimpse into our world-class mentorship environment.
               </p>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { src: '/about-gallery-1.jpg', alt: 'Live trading screen with market data' },
-                { src: '/about-gallery-2.jpg', alt: 'Lead mentor and instructor' },
-                { src: '/about-gallery-5.jpg', alt: 'Multi-screen trading setup' },
-              ].map((img, i) => (
-                <div key={i} className="rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                  <Image
-                    src={img.src}
-                    alt={img.alt}
-                    width={800}
-                    height={600}
-                    className="w-full h-auto object-contain hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              ))}
-            </div>
+            <AnimatedAboutGallery />
           </div>
         </section>
 

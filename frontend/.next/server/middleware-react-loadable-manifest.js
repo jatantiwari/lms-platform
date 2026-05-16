@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"components/course/CourseCurriculum.tsx -> @/components/video/VideoPlayer":{"id":6739,"files":["static/chunks/a4634e51-24aa94470917ff6d.js","static/chunks/6739-d3e14fb33ddde5ab.js"]},"components/course/CoursePreviewPlayer.tsx -> @/components/video/VideoPlayer":{"id":6739,"files":["static/chunks/a4634e51-24aa94470917ff6d.js","static/chunks/6739-d3e14fb33ddde5ab.js"]}}';
+self.__REACT_LOADABLE_MANIFEST="{}"
