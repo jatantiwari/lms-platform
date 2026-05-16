@@ -23,19 +23,6 @@ export function MentorCard({ mentor }: MentorCardProps) {
   return (
     <div className="bg-white rounded-lg overflow-hidden border border-border hover:shadow-lg transition-shadow h-full flex flex-col">
       {/* Image Section */}
-      <div className="relative h-64 bg-muted">
-        <Image
-          src={mentor.image}
-          alt={mentor.name}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-          <BadgeCheck className="w-4 h-4" />
-          Verified
-        </div>
-      </div>
-
       {/* Content Section */}
       <div className="p-6 flex-1 flex flex-col">
         <h3 className="text-xl font-bold text-foreground mb-1">

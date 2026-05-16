@@ -2,8 +2,10 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+
 import { CTASection } from '@/components/cta-section';
 import { Award, Users, TrendingUp } from 'lucide-react';
+import { MentorCard, MentorProfile } from '@/components/mentor-card';
 
 export const metadata: Metadata = {
   title: 'About Financial Freedom Mentor - Our Story & Mission',
@@ -84,6 +86,54 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
+
+        {/* Mentor Profile Section */}
+        <section className="w-full py-16 md:py-24 bg-muted/30">
+          <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Founder Profile – Financial Freedom Mentor
+              </h2>
+              <p className="text-lg text-muted-foreground mb-2 font-semibold">About the Mentor</p>
+              <p className="text-base md:text-lg text-muted-foreground">
+                Empowering People to Build Wealth Through Smart Trading & Financial Education
+              </p>
+            </div>
+            <MentorCard
+              mentor={{
+                name: 'Geeta Tiwary',
+                title: 'Founder & Lead Mentor – Financial Freedom Mentor',
+                specialization: 'Stock Market, Commodity Trading, Portfolio Management, Price Action, Risk Management, Trading Psychology, Wealth Building, Intraday & Swing Trading',
+                yearsOfExperience: 15,
+                rating: 4.9,
+                reviews: 1200,
+                bio: `Geeta Tiwary is a dedicated stock market mentor, trader, and educator with 15+ years of experience in the financial markets. She is focused on helping individuals create multiple income opportunities through smart investing, disciplined trading, and wealth-building strategies.\n\nWith practical market experience, live mentorship, and real-world trading knowledge, her mission is to help students avoid costly mistakes and develop the mindset required for long-term success in the financial markets.\n\nThe mentorship approach focuses on real market learning, live trading sessions, personal guidance, structured learning, long-term consistency, and building financial discipline.\n\nThe goal of Financial Freedom Mentor is not only to teach trading but to help people develop the mindset and confidence needed to achieve financial independence.`,
+                image: '/about-gallery-1.jpg',
+                credentials: [
+                  'NISM Certified by SEBI',
+                  'Portfolio Management Services (PMS) Certified by SEBI',
+                  'Post Graduate',
+                ],
+              }}
+            />
+            <div className="mt-10 text-center">
+              <h3 className="text-xl font-bold text-foreground mb-2">Why Choose Financial Freedom Mentor?</h3>
+              <ul className="text-base md:text-lg text-muted-foreground space-y-1 inline-block text-left mx-auto">
+                <li>✔ Beginner to Advanced Learning Structure</li>
+                <li>✔ Live Market Practical Sessions</li>
+                <li>✔ Personalized Mentorship Support</li>
+                <li>✔ Risk Management Focus</li>
+                <li>✔ Premium Trading Community</li>
+                <li>✔ Proven Learning Framework</li>
+                <li>✔ Long-Term Wealth</li>
+              </ul>
+              <p className="mt-6 text-base md:text-lg text-muted-foreground">
+                At Financial Freedom Mentor, we believe financial success is built through knowledge, discipline, and the right guidance. Our mentorship program is designed for ambitious individuals who want to master the markets with confidence and create a premium lifestyle through smart financial decisions.<br />
+                <span className="font-semibold">Led by experienced mentorship and practical market insights, we provide a high-level learning experience focused on strategy, mindset, and wealth creation.</span>
+              </p>
+            </div>
+          </div>
+        </section>
         {/* Gallery Section */}
         <section className="w-full py-16 md:py-24 bg-muted/30">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,10 +150,7 @@ export default function AboutPage() {
               {[
                 { src: '/about-gallery-1.jpg', alt: 'Live trading screen with market data' },
                 { src: '/about-gallery-2.jpg', alt: 'Lead mentor and instructor' },
-                { src: '/about-gallery-3.jpg', alt: 'Team at trading workstations' },
-                { src: '/about-gallery-4.jpg', alt: 'Traders working at computers' },
                 { src: '/about-gallery-5.jpg', alt: 'Multi-screen trading setup' },
-                { src: '/about-gallery-4.jpg', alt: 'One-on-one mentorship session' },
               ].map((img, i) => (
                 <div key={i} className="rounded-xl overflow-hidden bg-black flex items-center justify-center">
                   <Image

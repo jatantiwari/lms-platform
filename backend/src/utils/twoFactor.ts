@@ -138,7 +138,7 @@ export async function sendOtpViaTwoFactor(
     //   Template name: ADIOTPRETRIEVER
     //   Template body: <#> {#var#} is your ADI Boost OTP. {#var#}
     // Until then, fall back to plain OTP without hash (User Consent dialog).
-    const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/${otp}`;
+    const url = `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/${otp}/"OTP1"`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`2Factor HTTP error: ${res.status} ${res.statusText}`);
     const data = (await res.json()) as { Status: string; Details: string };
@@ -150,7 +150,7 @@ export async function sendOtpViaTwoFactor(
   // Supplying an unknown template causes 2Factor to fall back to a voice call.
   const url = template
     ? `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/${otp}/${template}`
-    : `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/${otp}`;
+    : `https://2factor.in/API/V1/${env.TWOFACTOR_API_KEY}/SMS/${phone10}/${otp}/"OTP1"`;
 
   const res = await fetch(url);
 

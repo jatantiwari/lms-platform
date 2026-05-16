@@ -295,7 +295,7 @@ export const sendPhoneOtp = catchAsync(async (req: Request, res: Response) => {
 
   const otp = generateOtp(6);
   const appHash = typeof req.body?.appHash === 'string' ? req.body.appHash : undefined;
-  await sendOtpViaTwoFactor(phone, otp, appHash);
+  await sendOtpViaTwoFactor(phone, otp, appHash,"OTP1");
 
   await prisma.user.update({
     where: { id: userId },

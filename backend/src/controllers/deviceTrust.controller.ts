@@ -116,7 +116,7 @@ export const updatePhone = catchAsync(async (req: Request, res: Response) => {
     const phone10 = normalizePhone(newPhone);
     const generatedOtp = generateOtp(6);
 
-    await sendOtpViaTwoFactor(phone10, generatedOtp);
+    await sendOtpViaTwoFactor(phone10, generatedOtp,undefined,"OTP1");
 
     // Store encoded session (hash|expiry) with PHONE_CHANGE prefix
     await prisma.user.update({

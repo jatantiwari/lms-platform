@@ -70,7 +70,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Learn, Invest, Grow. Master commodity trading with expert mentorship and proven strategies for lasting financial freedom.
+              Master commodity trading and stock Market trading with expert.
             </p>
             <div className="mt-4 space-y-1 text-sm">
               <a href="mailto:info@ffmentor.com" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">

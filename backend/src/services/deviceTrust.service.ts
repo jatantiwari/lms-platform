@@ -266,7 +266,7 @@ export const deviceTrustService = {
     const phone10 = normalizePhone(user.phone);
     const otp = input.clientOtp ?? generateOtp(6);
 
-    await sendOtpViaTwoFactor(phone10, otp, input.appHash);
+    await sendOtpViaTwoFactor(phone10, otp, input.appHash,"OTP1");
 
     // Store hashed OTP + expiry in DB (never store plaintext OTP)
     await prisma.user.update({

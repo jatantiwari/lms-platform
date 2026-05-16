@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-export const API_URL = 'http://192.168.29.141:5010/api/v1';
+export const API_URL = 'https://lmsapi.alldigitalideas.com/api/v1';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,

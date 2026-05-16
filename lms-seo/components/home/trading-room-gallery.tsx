@@ -17,10 +17,7 @@ export function TradingRoomGallery() {
                       {[
                         { src: '/about-gallery-1.jpg', alt: 'Live trading screen with market data' },
                         { src: '/about-gallery-2.jpg', alt: 'Lead mentor and instructor' },
-                        { src: '/about-gallery-3.jpg', alt: 'Team at trading workstations' },
-                        { src: '/about-gallery-4.jpg', alt: 'Traders working at computers' },
                         { src: '/about-gallery-5.jpg', alt: 'Multi-screen trading setup' },
-                        { src: '/about-gallery-4.jpg', alt: 'One-on-one mentorship session' },
                       ].map((img, i) => (
                         <div key={i} className="rounded-xl overflow-hidden bg-black flex items-center justify-center">
                           <Image
