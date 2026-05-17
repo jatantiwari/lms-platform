@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://lmsapi.alldigitalideas.com/api/v1';
 
 export function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
