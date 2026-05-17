@@ -13,6 +13,7 @@ const email_1 = require("../utils/email");
 const s3_service_1 = require("../services/s3.service");
 const env_1 = require("../config/env");
 const prisma_1 = __importDefault(require("../config/prisma"));
+const twoFactor_1 = require("../utils/twoFactor");
 const crypto_1 = __importDefault(require("crypto"));
 // ─── Register ─────────────────────────────────────────────────────────────────
 exports.register = (0, catchAsync_1.catchAsync)(async (req, res) => {
@@ -227,17 +228,14 @@ exports.sendPhoneOtp = (0, catchAsync_1.catchAsync)(async (req, res) => {
         throw new AppError_1.AppError('No phone number found. Update your profile first.', 400);
     if (!env_1.env.TWOFACTOR_API_KEY)
         throw new AppError_1.AppError('SMS service not configured', 503);
-    // Strip to digits only — 2Factor expects E.164 without + for Indian numbers
+    // Strip to digits only — 2Factor expects 10-digit Indian number
     const phone = user.phone.replace(/\D/g, '').replace(/^91/, '').slice(-10);
-    const url = `https://2factor.in/API/V1/${env_1.env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN`;
-    const tfRes = await fetch(url);
-    const tfData = (await tfRes.json());
-    if (tfData.Status !== 'Success') {
-        throw new AppError_1.AppError(`Failed to send OTP: ${tfData.Details}`, 502);
-    }
+    const otp = (0, twoFactor_1.generateOtp)(6);
+    const appHash = typeof req.body?.appHash === 'string' ? req.body.appHash : undefined;
+    await (0, twoFactor_1.sendOtpViaTwoFactor)(phone, otp, appHash, "OTP1");
     await prisma_1.default.user.update({
         where: { id: userId },
-        data: { phoneOtpSession: tfData.Details },
+        data: { phoneOtpSession: (0, twoFactor_1.encodeOtpSession)(otp) },
     });
     (0, response_1.sendSuccess)(res, {}, 'OTP sent to your registered mobile number');
 });
@@ -258,10 +256,9 @@ exports.verifyPhoneOtp = (0, catchAsync_1.catchAsync)(async (req, res) => {
     }
     if (!env_1.env.TWOFACTOR_API_KEY)
         throw new AppError_1.AppError('SMS service not configured', 503);
-    const url = `https://2factor.in/API/V1/${env_1.env.TWOFACTOR_API_KEY}/SMS/VERIFY/${user.phoneOtpSession}/${otp}`;
-    const tfRes = await fetch(url);
-    const tfData = (await tfRes.json());
-    if (tfData.Status !== 'Success' || !tfData.Details.includes('OTP Matched')) {
+    // Verify OTP locally against stored hash
+    const decoded = (0, twoFactor_1.decodeOtpSession)(user.phoneOtpSession);
+    if (!decoded || !(0, twoFactor_1.verifyOtpHash)(otp, decoded.hash)) {
         throw new AppError_1.AppError('Invalid or expired OTP. Please try again.', 400);
     }
     await prisma_1.default.user.update({

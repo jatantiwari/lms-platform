@@ -34,5 +34,12 @@ export declare function seoPaymentConfirmedTemplate(name: string, plan: string, 
  * Sent to the student when the instructor manually enrolls them into a course.
  */
 export declare function seoEnrollmentConfirmTemplate(name: string, courseTitle: string, loginUrl: string): string;
+export declare function seoLeadStudentAckTemplate(name: string): string;
+export declare function seoLeadInstructorTemplate(instructorName: string, lead: {
+    fullName: string;
+    email: string;
+    phone?: string;
+    message: string;
+}): string;
 export {};
 //# sourceMappingURL=email.d.ts.map

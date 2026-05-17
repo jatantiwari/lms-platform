@@ -23,7 +23,7 @@ app.use((0, helmet_1.default)({
 // ─── CORS ──────────────────────────────────────────────────────────────────────
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
-        const allowedOrigins = [env_1.env.FRONTEND_URL, 'http://localhost:3000'];
+        const allowedOrigins = [env_1.env.FRONTEND_URL, env_1.env.SEO_SITE_URL, 'http://localhost:3000', 'http://localhost:3001'];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         }

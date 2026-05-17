@@ -55,6 +55,12 @@ const envSchema = z.object({
 
   // Email (AWS SES)
   EMAIL_FROM: z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
+
+  // Firebase Admin SDK (phone OTP)
+  FIREBASE_PROJECT_ID: z.string().optional().default(''),
+  FIREBASE_CLIENT_EMAIL: z.string().optional().default(''),
+  FIREBASE_PRIVATE_KEY: z.string().optional().default(''),
+  FIREBASE_WEB_API_KEY: z.string().optional().default(''),
 });
 
 const _env = envSchema.safeParse(process.env);

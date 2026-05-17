@@ -16,7 +16,15 @@ export declare const env: {
     SEO_SITE_URL: string;
     DEFAULT_INSTRUCTOR_ID: string;
     TWOFACTOR_API_KEY: string;
+    SMS_RETRIEVER_TEMPLATE: string;
+    DEVICE_BINDING_SECRET: string;
+    DEVICE_SMS_TARGET_NUMBER: string;
+    SMS_WEBHOOK_SECRET: string;
     EMAIL_FROM: string;
+    FIREBASE_PROJECT_ID: string;
+    FIREBASE_CLIENT_EMAIL: string;
+    FIREBASE_PRIVATE_KEY: string;
+    FIREBASE_WEB_API_KEY: string;
     AWS_S3_ENDPOINT?: string | undefined;
 };
 export type Env = typeof env;

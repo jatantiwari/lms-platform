@@ -37,8 +37,23 @@ const envSchema = zod_1.z.object({
     DEFAULT_INSTRUCTOR_ID: zod_1.z.string().min(1).optional().default(''),
     // 2Factor SMS OTP (https://2factor.in)
     TWOFACTOR_API_KEY: zod_1.z.string().optional().default(''),
+    // Optional: custom 2Factor template name that includes the Android app hash
+    // e.g. "ADIBoostOTP". Leave empty to use AUTOGEN (no SMS auto-read on Android).
+    SMS_RETRIEVER_TEMPLATE: zod_1.z.string().optional().default(''),
+    // Device binding HMAC secret (min 32 chars)
+    DEVICE_BINDING_SECRET: zod_1.z.string().min(16).optional().default('change-me-device-binding-secret-32'),
+    // Mobile-originated SMS verification
+    // Virtual number (e.g. Twilio/2Factor) that receives verification SMS from devices
+    DEVICE_SMS_TARGET_NUMBER: zod_1.z.string().optional().default(''),
+    // Secret token shared with SMS gateway webhook (e.g. Twilio auth token or custom header)
+    SMS_WEBHOOK_SECRET: zod_1.z.string().optional().default(''),
     // Email (AWS SES)
     EMAIL_FROM: zod_1.z.string().default('LMS Platform <no-reply@lmsplatform.com>'),
+    // Firebase Admin SDK (phone OTP)
+    FIREBASE_PROJECT_ID: zod_1.z.string().optional().default(''),
+    FIREBASE_CLIENT_EMAIL: zod_1.z.string().optional().default(''),
+    FIREBASE_PRIVATE_KEY: zod_1.z.string().optional().default(''),
+    FIREBASE_WEB_API_KEY: zod_1.z.string().optional().default(''),
 });
 const _env = envSchema.safeParse(process.env);
 if (!_env.success) {
