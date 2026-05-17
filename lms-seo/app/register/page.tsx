@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://lmsapi.alldigitalideas.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://lmsapi.alldigitalideas.com/api/v1';
 
 type FormData = {
   studentName: string;

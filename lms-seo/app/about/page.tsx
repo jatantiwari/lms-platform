@@ -109,7 +109,7 @@ export default function AboutPage() {
                 rating: 4.9,
                 reviews: 1200,
                 bio: `Geeta Tiwary is a dedicated stock market mentor, trader, and educator with 15+ years of experience in the financial markets. She is focused on helping individuals create multiple income opportunities through smart investing, disciplined trading, and wealth-building strategies.\n\nWith practical market experience, live mentorship, and real-world trading knowledge, her mission is to help students avoid costly mistakes and develop the mindset required for long-term success in the financial markets.\n\nThe mentorship approach focuses on real market learning, live trading sessions, personal guidance, structured learning, long-term consistency, and building financial discipline.\n\nThe goal of Financial Freedom Mentor is not only to teach trading but to help people develop the mindset and confidence needed to achieve financial independence.`,
-                image: '/about-gallery-1.jpg',
+                image: '/mentor.jpeg',
                 credentials: [
                   'NISM Certified by SEBI',
                   'Portfolio Management Services (PMS) Certified by SEBI',
